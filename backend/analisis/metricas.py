@@ -468,6 +468,11 @@ def rival(equipo: str, down: int | None = None, distancia: str | None = None) ->
             "validacion_tarjeta": _validacion_tarjeta(), "frases": frases}
 
 
+def replays() -> list[dict]:
+    """GET /api/replays: 3 repeticiones elegidas por regla (docs/replays.md), con la forma de REPLAYS."""
+    return json.loads((DERIVADO / "replays.json").read_text(encoding="utf-8"))
+
+
 # --- Revisión -----------------------------------------------------------------------------------
 
 def cifras_extra() -> dict:

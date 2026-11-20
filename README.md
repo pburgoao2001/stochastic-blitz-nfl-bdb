@@ -27,6 +27,7 @@ El stack es fijo: Python 3.12 con pandas, numpy y la biblioteca estándar. En WS
 ./.venv/Scripts/python.exe -m backend.analisis.preparar           # cuadros: data/derivado/frames_def.pkl, jugadas_base.csv
 ./.venv/Scripts/python.exe -m backend.analisis.estructura         # lector de estructura y validación (semanas 7-8)
 ./.venv/Scripts/python.exe -m backend.analisis.preparar jugadas   # data/derivado/jugadas.csv
+./.venv/Scripts/python.exe -m backend.analisis.preparar replays   # data/derivado/replays.json (3 repeticiones por regla, docs/replays.md)
 ./.venv/Scripts/python.exe -m backend.analisis.metricas           # revisión del contrato de la API
 ```
 

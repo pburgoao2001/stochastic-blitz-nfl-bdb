@@ -15,7 +15,8 @@ Tubería completa, desde la raíz del proyecto:
     1. ./.venv/Scripts/python.exe -m backend.analisis.preparar            (cuadros: lo de arriba)
     2. ./.venv/Scripts/python.exe -m backend.analisis.estructura          (lector de estructura)
     3. ./.venv/Scripts/python.exe -m backend.analisis.preparar jugadas    (jugadas.csv; ver preparar_jugadas)
-    4. ./.venv/Scripts/python.exe -m backend.analisis.metricas            (revisión de la API)
+    4. ./.venv/Scripts/python.exe -m backend.analisis.preparar replays    (replays.json; ver preparar_replays)
+    5. ./.venv/Scripts/python.exe -m backend.analisis.metricas            (revisión de la API)
 
 Convenciones (cada corrida las verifica con los datos y las reporta):
   - 10 cuadros por segundo: t = (frameId - frame_snap) / 10.
@@ -387,13 +388,94 @@ def preparar_jugadas() -> None:
     print(f"tiempo: {time.perf_counter() - t0:.1f} s")
 
 
+CLASES_REPLAY = ["a: disfrazada, lanzó antes de la revelación", "b: disfrazada, lanzó después de la revelación",
+                  "c: honesta"]
+SUFIJO_REPLAY = " · ejemplo ilustrativo elegido por regla"
+
+
+def _cuadros_replay(fila: pd.Series, estructura: dict) -> list[dict] | None:
+    """Cuadros del snap al pase (10 Hz) de una jugada, o None si falta algún cuadro o jugador.
+
+    Coordenadas normalizadas (ofensiva hacia +x), x relativa a la línea (x - x del balón en el snap),
+    redondeo a 0.1 yd; jugadores ordenados por nflId para que cada índice sea el mismo jugador.
+    """
+    gid, pid, snap, pase = int(fila["gameId"]), int(fila["playId"]), int(fila["frame_snap"]), int(fila["frame_pase"])
+    t = pd.read_csv(DATOS / "tracking" / f"tracking_{gid}.csv",
+                    usecols=["playId", "nflId", "frameId", "team", "playDirection", "x", "y"])
+    t = t[(t["playId"] == pid) & t["frameId"].between(snap, pase)].copy()
+    izq = t["playDirection"].eq("left").to_numpy()
+    t["x"] = np.where(izq, LARGO - t["x"], t["x"])
+    t["y"] = np.where(izq, ANCHO - t["y"], t["y"])
+    bal = t[t["team"] == "football"].set_index("frameId")
+    if snap not in bal.index:
+        return None
+    x0 = float(bal.loc[snap, "x"])
+    lado = {"def": fila["defensiveTeam"], "of": fila["possessionTeam"]}
+    salida = []
+    for f in range(snap, pase + 1):
+        c = t[t["frameId"] == f].sort_values("nflId")
+        grupos = {k: c[c["team"] == v] for k, v in lado.items()}
+        if f not in bal.index or len(c) != 23 or any(len(g) != 11 for g in grupos.values()) or f not in estructura:
+            return None
+        par = lambda x, y: [round(float(x) - x0, 1) + 0.0, round(float(y), 1) + 0.0]
+        salida.append({"t": round((f - snap) / HZ, 1),
+                       "def": [par(x, y) for x, y in zip(grupos["def"]["x"], grupos["def"]["y"])],
+                       "of": [par(x, y) for x, y in zip(grupos["of"]["x"], grupos["of"]["y"])],
+                       "balon": par(bal.loc[f, "x"], bal.loc[f, "y"]),
+                       "estructura": estructura[f]})
+    return salida
+
+
+def preparar_replays() -> None:
+    """Etapa 4: data/derivado/replays.json con 3 jugadas elegidas por regla (docs/replays.md).
+
+    Clases: a) disfraz y lanzó antes de la revelación (ciega); b) disfraz y lanzó después de revelarse;
+    c) honesta (sin disfraz). En cada clase, la de mayor |p_snap - 0.5| con 2.5 <= t_pase <= 4.0 s y sin
+    cuadros faltantes; desempate por gameId y playId. La forma es la de REPLAYS en backend/mocks.py.
+    """
+    j = pd.read_csv(DERIVADO / "jugadas.csv").merge(
+        pd.read_csv(DERIVADO / "jugadas_base.csv", usecols=CLAVE + ["frame_snap", "frame_pase"]), on=CLAVE)
+    descripciones = pd.read_csv(DATOS / "plays.csv", usecols=CLAVE + ["playDescription"]).set_index(CLAVE)
+    cuadros = pd.read_pickle(DERIVADO / "estructura_cuadros.pkl")[CLAVE + ["frameId", "estructura"]]
+    en_rango = j["t_pase"].between(2.5, 4.0)
+    mascaras = [(j["disfraz"] == 1) & (j["ciega"] == 1), (j["disfraz"] == 1) & (j["evento_revela"] == 1),
+                j["disfraz"] == 0]
+    replays, elegidas = [], []
+    for clase, m in zip(CLASES_REPLAY, mascaras):
+        cand = (j[m & en_rango].assign(margen=lambda d: (d["p_snap"] - 0.5).abs())
+                .sort_values(["margen", "gameId", "playId"], ascending=[False, True, True]))
+        for _, fila in cand.iterrows():
+            est = cuadros[(cuadros["gameId"] == fila["gameId"]) & (cuadros["playId"] == fila["playId"])]
+            frames = _cuadros_replay(fila, dict(zip(est["frameId"].astype(int), est["estructura"].astype(str))))
+            if frames is None:
+                continue
+            ciega = clase.startswith("a")
+            revela = None if ciega else float(fila["revela_t"])
+            texto = str(descripciones.loc[(int(fila["gameId"]), int(fila["playId"])), "playDescription"])[:140]
+            replays.append({"gameId": str(int(fila["gameId"])), "playId": str(int(fila["playId"])),
+                            "descripcion": texto + SUFIJO_REPLAY, "frames": frames,
+                            "eventos": {"snap": 0.0, "revela": revela, "lanza": float(fila["t_pase"])}})
+            elegidas.append({"clase": clase, "gameId": int(fila["gameId"]), "playId": int(fila["playId"]),
+                             "defensa": fila["defensiveTeam"], "ataque": fila["possessionTeam"],
+                             "p_snap": round(float(fila["p_snap"]), 4), "muestra": fila["muestra"],
+                             "juega": fila["juega"], "cobertura": fila["pff_passCoverage"],
+                             "t_pase": float(fila["t_pase"]), "revela": revela, "cuadros": len(frames),
+                             "candidatas": int(len(cand))})
+            break
+    a, b = replays[0]["eventos"], replays[1]["eventos"]
+    assert a["revela"] is None or a["revela"] > a["lanza"], "clase a: revela debe ser null o > lanza"
+    assert b["revela"] is not None and b["revela"] < b["lanza"], "clase b: revela debe ser < lanza"
+    texto = json.dumps(replays, ensure_ascii=False, separators=(",", ":"))
+    (DERIVADO / "replays.json").write_text(texto, encoding="utf-8")
+    print(json.dumps(elegidas, ensure_ascii=False, indent=1))
+    print(f"replays.json: {len(replays)} jugadas, {len(texto.encode('utf-8')) / 1024:.1f} KB")
+
+
 if __name__ == "__main__":
     import argparse
 
     lector = argparse.ArgumentParser(description="Prepara los insumos de La Carrera Invisible.")
-    lector.add_argument("etapa", nargs="?", default="cuadros", choices=["cuadros", "jugadas"],
-                        help="cuadros (por omisión) o jugadas (después de estructura.py)")
-    if lector.parse_args().etapa == "jugadas":
-        preparar_jugadas()
-    else:
-        main()
+    lector.add_argument("etapa", nargs="?", default="cuadros", choices=["cuadros", "jugadas", "replays"],
+                        help="cuadros (por omisión), jugadas (después de estructura.py) o replays (al final)")
+    etapa = lector.parse_args().etapa
+    {"cuadros": main, "jugadas": preparar_jugadas, "replays": preparar_replays}[etapa]()
