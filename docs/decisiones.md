@@ -38,8 +38,8 @@ Definiciones:
 - **Efecto:** logística por IRLS de éxito sobre ciega, entre jugadas con disfraz. Controles: tramos de t_pase (<2.0, 2.0-2.5, 2.5-3.0, ≥3.0), down, distancia (1-3, 4-6, 7+), zona (propia > 50, medio 20-50, roja ≤ 20; la roja tiene 1 jugada), n_rushers, shotgun y play action. Se usa l2 = 1e-6 solo por estabilidad numérica. Se reporta el efecto marginal promedio en pp. Convergieron las 300 réplicas; si no, se usaría Mantel-Haenszel.
 - **equipos():** beta-binomial empírico sobre disfraz/decididas por defensa (mu = 0.275, kappa = 35.5). El IC sale de 20,000 sorteos de la posterior. La mediana de revelación queda vacía si el equipo tiene menos de 20 jugadas con disfraz.
 - **rival():** P(juega un alto | lo que muestra en el snap), encogida hacia la liga con kappa beta-binomial. La `validacion_tarjeta` es el Brier en semanas 7-8 usando las semanas 1-6: mezcla 0.197, liga 0.203, equipo 0.199. El éxito por formación lleva IC de Wilson.
-- **estabilidad:** queda vacía (`null`) por ahora.
+## P6b: titular final y estabilidad
 
-## Pendientes
-
-- `estabilidad` (r y Spearman-Brown) está vacía.
+- **Titular:** se genera con una plantilla a partir de los números calculados: mediana de revelación y su IC, % de pases lanzados a esa mediana, disfraz corregido en coberturas de dos altos y efecto de lanzar a ciegas. Comprobé que es idéntico, carácter por carácter, al texto pedido.
+- **Estabilidad (`resumen()["estabilidad"]`):** split-half del ID por defensa. Se comparan los partidos impares (1.º, 3.º, …) contra los pares de cada defensa, en orden cronológico, con Bayes empírico (beta-binomial) en cada mitad. Se reportan la r de Pearson entre las medias posteriores de las dos mitades y Spearman-Brown, 2r/(1 + r).
+- **Intervalo de la estabilidad:** el bootstrap por partido queda sesgado hacia abajo, porque remuestrear partidos con reemplazo duplica jugadas dentro de una mitad y mete ruido. Por eso se reporta el IC Fisher z sobre los 32 equipos y, además, la variación de r entre 50 divisiones al azar balanceadas por equipo (`cifras_extra()`).

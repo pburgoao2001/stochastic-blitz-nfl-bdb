@@ -277,7 +277,13 @@ def _validacion(registro: dict) -> dict:
             "exactitud_regla": regla["valor"], "n": n, "texto": texto}
 
 
-def _titular(idd: dict, ef: dict) -> str:
+def _con_signo(x: float) -> str:
+    return f"{x:+.1f}".replace("-", "−")
+
+
+def _titular(rev: dict, lanzado: float, dos_altos: float, ef: dict) -> str:
+    """Titular con los números calculados: mediana de revelación, % lanzado a esa mediana, disfraz
+    corregido en coberturas de dos altos y efecto de lanzar a ciegas."""
     v, (lo, hi) = ef["valor_pp"], ef["ic90"]
     if lo > 0:
         relacion = "se asocia con más éxito"
@@ -285,10 +291,42 @@ def _titular(idd: dict, ef: dict) -> str:
         relacion = "se asocia con menos éxito"
     else:
         relacion = "no se asocia con una diferencia clara de éxito"
-    lo_id, hi_id = idd["corregido_ic90"]
-    return (f"Corrigiendo el error del lector, la defensa disfraza su estructura en el {idd['corregido']:.0%} "
-            f"(IC90 {lo_id:.0%}-{hi_id:.0%}) de los pases que se pueden leer en el snap; lanzar antes de que "
-            f"se revele {relacion} frente a leerla: {v:+.1f} pp (IC90 {lo:+.1f} a {hi:+.1f}, n={ef['n']}).")
+    efecto = (f"Lanzar antes de la revelación {relacion}: {_con_signo(v)} pp "
+              f"(IC90 {_con_signo(lo)} a {_con_signo(hi)}, n={ef['n']:,}).")
+    disfraz = (f"El disfraz casi siempre es mostrar un safety profundo y jugar con dos "
+               f"({dos_altos:.0%} de las coberturas de dos altos).")
+    if rev["mediana_s"] is None:
+        return f"La defensa gana la carrera: la mitad de los disfraces no se revela antes del pase. {disfraz} {efecto}"
+    quien = "La defensa gana la carrera" if lanzado >= 0.5 else "El QB gana la carrera"
+    lo_r, hi_r = rev["ic90"]
+    return (f"{quien}: la cobertura se revela con mediana de {rev['mediana_s']:.1f} s (IC90 {lo_r:.1f}–{hi_r:.1f}) "
+            f"y para entonces ya salió el {lanzado:.0%} de los pases. {disfraz} {efecto}")
+
+
+def _mitades(j: pd.DataFrame) -> pd.DataFrame:
+    """Decididas con su mitad: partidos impares (1.º, 3.º, ...) o pares de cada defensa, en orden cronológico."""
+    d = _decididas(j)
+    orden = d[["defensiveTeam", "gameId"]].drop_duplicates().sort_values(["defensiveTeam", "gameId"])
+    orden["mitad"] = orden.groupby("defensiveTeam").cumcount() % 2
+    return d.merge(orden, on=["defensiveTeam", "gameId"])
+
+
+def _split_half(d: pd.DataFrame, **rejillas) -> np.ndarray:
+    """[r de Pearson entre mitades del ID por equipo (Bayes empírico en cada mitad), Spearman-Brown, equipos]."""
+    medias = []
+    for m in (0, 1):
+        g = d[d["mitad"] == m].groupby("defensiveTeam")["disfraz"].agg(x="sum", n="size")
+        eb = betabinom_eb(g["x"], g["n"], **rejillas)
+        a, b = eb["mu"] * eb["kappa"], (1 - eb["mu"]) * eb["kappa"]
+        medias.append((g["x"] + a) / (g["n"] + a + b))
+    t = pd.concat(medias, axis=1, keys=["impar", "par"]).dropna()
+    r = float(np.corrcoef(t["impar"], t["par"])[0, 1]) if len(t) > 2 else math.nan
+    return np.array([r, 2 * r / (1 + r), len(t)])
+
+
+def _estabilidad(j: pd.DataFrame) -> dict:
+    r, sb, _ = _split_half(_mitades(j))
+    return {"r": _num(r), "spearman_brown": _num(sb)}
 
 
 @lru_cache(maxsize=1)
@@ -298,8 +336,10 @@ def resumen() -> dict:
     idd = indice_disfraz()
     ef = efecto_ciega(j)
     revelacion, _ = _revelacion(j)
+    med = revelacion["mediana_s"]
+    lanzado = float((j["t_pase"] <= med + 1e-9).mean()) if med is not None else math.nan
     return {
-        "titular": _titular(idd, ef),
+        "titular": _titular(revelacion, lanzado, idd["por_clase"]["juega_abierto"]["corregido"], ef),
         "n_jugadas": int(len(j)),
         "id_liga": {"valor": _num(idd["observado"]), "ic90": _ic(*idd["observado_ic90"]), "n": idd["n"]},
         "efecto": {"valor_pp": _num(ef["valor_pp"], 2), "ic90": _ic(*ef["ic90"], 2), "n": ef["n"],
@@ -307,7 +347,7 @@ def resumen() -> dict:
         "contraste": _contraste(j),
         "revelacion": revelacion,
         "validacion": _validacion(registro),
-        "estabilidad": {"r": None, "spearman_brown": None},
+        "estabilidad": _estabilidad(j),
         "sankey": _sankey(j),
     }
 
@@ -427,7 +467,42 @@ def cifras_extra() -> dict:
     lanzado = bootstrap_partidos(j, lambda x: np.array([(x["t_pase"] <= 2.5).mean(), (x["t_pase"] <= 3.0).mean()]),
                                  B, SEMILLA)
     idd = indice_disfraz()
-    return {"mh_pp": {"valor": round(_efecto_mh(d), 2), "ic90": np.round(intervalo(mh), 2).tolist(), "n": int(len(d))},
+    # Estabilidad split-half: IC por bootstrap por partido con una rejilla gruesa de la beta-binomial.
+    gruesa = {"rejilla_mu": [i / 50 for i in range(1, 50)], "rejilla_kappa": [10 ** (k / 10) for k in range(0, 41)]}
+    mitades = _mitades(j)
+    sh = bootstrap_partidos(mitades, lambda x: _split_half(x, **gruesa), B, SEMILLA)
+    # El bootstrap por partido sesga r hacia abajo (duplica jugadas dentro de una mitad); se reporta además
+    # Fisher z sobre los equipos y la variación entre 50 divisiones al azar balanceadas por equipo.
+    rng = np.random.default_rng(SEMILLA)
+    pares = mitades[["defensiveTeam", "gameId"]].drop_duplicates()
+    azar = []
+    for _ in range(50):
+        p = pares.assign(u=rng.random(len(pares))).sort_values(["defensiveTeam", "u"])
+        p["mitad"] = p.groupby("defensiveTeam").cumcount() % 2
+        azar.append(_split_half(mitades.drop(columns="mitad").merge(p[["defensiveTeam", "gameId", "mitad"]]),
+                                **gruesa)[0])
+    azar = np.array(azar)
+    # ID observado por equipo contra su tasa de dos altos (mezcla de coberturas).
+    def mezcla(x: pd.DataFrame) -> float:
+        t = _decididas(x).groupby("defensiveTeam").agg(id=("disfraz", "mean"), dos=("juega", lambda s: (s == "abierto").mean()))
+        return float(t["id"].corr(t["dos"]))
+    mz = bootstrap_partidos(j, mezcla, B, SEMILLA)
+    punto_sh = _split_half(mitades)
+    z, se = math.atanh(punto_sh[0]), 1 / math.sqrt(punto_sh[2] - 3)
+    fz = np.tanh([z - 1.645 * se, z + 1.645 * se])
+    return {"estabilidad": {"r": round(float(punto_sh[0]), 4), "spearman_brown": round(float(punto_sh[1]), 4),
+                            "equipos": int(punto_sh[2]),
+                            "partidos_por_mitad": mitades.groupby("mitad")["gameId"].nunique().to_dict(),
+                            "r_ic90_fisher_z_equipos": np.round(fz, 4).tolist(),
+                            "spearman_brown_ic90_fisher_z": np.round(2 * fz / (1 + fz), 4).tolist(),
+                            "divisiones_al_azar_50": {"media": round(float(azar.mean()), 4),
+                                                      "p5": round(float(np.quantile(azar, 0.05)), 4),
+                                                      "p95": round(float(np.quantile(azar, 0.95)), 4)},
+                            "bootstrap_partido_sesgado": {"ic90": np.round(intervalo(sh[:, 0]), 4).tolist(),
+                                                          "mediana": round(float(np.median(sh[:, 0])), 4),
+                                                          "fraccion_bajo_el_punto": round(float(np.mean(sh[:, 0] < punto_sh[0])), 3)}},
+            "corr_id_vs_dos_altos": {"r": round(mezcla(j), 4), "ic90": np.round(intervalo(mz), 4).tolist(), "equipos": 32},
+            "mh_pp": {"valor": round(_efecto_mh(d), 2), "ic90": np.round(intervalo(mh), 2).tolist(), "n": int(len(d))},
             "lanzado_2_5s": {"valor": round(float((j["t_pase"] <= 2.5).mean()), 4),
                              "ic90": np.round(intervalo(lanzado)[:, 0], 4).tolist(), "n": int(len(j))},
             "lanzado_3_0s": {"valor": round(float((j["t_pase"] <= 3.0).mean()), 4),

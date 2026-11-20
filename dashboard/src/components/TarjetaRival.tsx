@@ -11,6 +11,7 @@ export default function TarjetaRival({ equipos }: { equipos: EquipoRow[] }) {
   const [rival, setRival] = useState<RivalData | null>(null)
   const [informe, setInforme] = useState<{ texto: string; fuente: string } | null>(null)
   const [error, setError] = useState('')
+  const [errorInforme, setErrorInforme] = useState('')
   const [cargando, setCargando] = useState(false)
 
   useEffect(() => {
@@ -28,18 +29,19 @@ export default function TarjetaRival({ equipos }: { equipos: EquipoRow[] }) {
     return () => { vivo = false }
   }, [equipo, down, distancia])
 
-  useEffect(() => { setInforme(null) }, [equipo])
+  useEffect(() => { setInforme(null); setErrorInforme('') }, [equipo])
 
   const generar = () => {
     setCargando(true)
+    setErrorInforme('')
     fetch('api/informe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ equipo }),
     })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((d) => { setInforme(d); setError('') })
-      .catch(() => setError('No se pudo generar el informe'))
+      .then((d) => { setInforme(d) })
+      .catch(() => setErrorInforme('No se pudo redactar el informe. Intenta de nuevo.'))
       .finally(() => setCargando(false))
   }
 
@@ -62,10 +64,11 @@ export default function TarjetaRival({ equipos }: { equipos: EquipoRow[] }) {
           onClick={generar}
           disabled={!equipo || cargando}
         >
-          {cargando ? 'Generando…' : 'Generar informe'}
+          {cargando ? 'Redactando…' : 'Redactar informe semanal'}
         </button>
       </div>
       {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+      {errorInforme && <p className="text-gray-500 text-sm mt-2">{errorInforme}</p>}
       {rival && (
         <div className="grid md:grid-cols-2 gap-4 mt-4 text-sm">
           <div>
@@ -90,7 +93,9 @@ export default function TarjetaRival({ equipos }: { equipos: EquipoRow[] }) {
       {informe && (
         <div className="mt-4 border-t pt-3">
           <span className="inline-block text-xs font-semibold bg-gray-200 rounded px-2 py-0.5 mb-2">
-            {informe.fuente === 'ia' ? 'Generado por IA' : 'Generado por plantilla'}
+            {informe.fuente === 'ia'
+              ? 'IA (Amazon Nova) · números verificados contra los datos'
+              : 'Plantilla (sin IA)'}
           </span>
           <p className="whitespace-pre-line">{informe.texto}</p>
         </div>

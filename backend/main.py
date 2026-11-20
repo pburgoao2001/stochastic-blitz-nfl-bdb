@@ -65,8 +65,7 @@ def api_equipos() -> list:
     return EQUIPOS
 
 
-@app.get("/api/rival")
-def api_rival(equipo: str, down: Optional[int] = None, distancia: Optional[str] = None) -> dict:
+def _obtener_rival(equipo: str, down: Optional[int] = None, distancia: Optional[str] = None) -> dict:
     if _rival_real is not None:
         try:
             return _rival_real(equipo, down, distancia)
@@ -74,6 +73,11 @@ def api_rival(equipo: str, down: Optional[int] = None, distancia: Optional[str] 
             print(f"[warn] rival() falló: {e}", file=sys.stderr)
     entrada = mocks.RIVAL_TABLE.get((equipo, down, distancia))
     return entrada if entrada is not None else mocks.rival_default(equipo)
+
+
+@app.get("/api/rival")
+def api_rival(equipo: str, down: Optional[int] = None, distancia: Optional[str] = None) -> dict:
+    return _obtener_rival(equipo, down, distancia)
 
 
 @app.get("/api/replays")
@@ -85,18 +89,14 @@ class InformeRequest(BaseModel):
     equipo: str
 
 
-def plantilla(equipo: str) -> str:
-    fila = next((e for e in EQUIPOS if e["equipo"] == equipo), None)
-    texto = RESUMEN["titular"]
-    if fila is None:
-        return f"{texto} No hay datos específicos para {equipo}."
-    return (
-        f"{texto} {equipo} tiene un índice de disfraz de {fila['id']['valor']:.2f} "
-        f"(IC90 {fila['id']['ic90'][0]:.2f}–{fila['id']['ic90'][1]:.2f}, n={fila['id']['n']}) "
-        f"y revela su cobertura en una mediana de {fila['revelacion_mediana_s']:.1f} s."
-    )
-
-
 @app.post("/api/informe")
 def informe(body: InformeRequest) -> dict:
-    return {"texto": plantilla(body.equipo), "fuente": "plantilla"}
+    try:
+        # Importación perezosa; cargar_env() ya corrió al inicio de este módulo.
+        from backend.informe import generar_informe
+
+        # Se pasan los mismos datos que usan los demás endpoints (sin importación circular).
+        return generar_informe(body.equipo, EQUIPOS, RESUMEN, _obtener_rival)
+    except Exception:  # noqa: BLE001
+        print("informe: plantilla (error interno)", file=sys.stderr)
+        return {"texto": f"No se pudo redactar el informe de {body.equipo}.", "fuente": "plantilla"}

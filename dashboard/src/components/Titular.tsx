@@ -28,10 +28,10 @@ export default function Titular({ resumen }: { resumen: ResumenData }) {
             <YAxis type="category" dataKey="estrato" width={120} />
             <Tooltip />
             <Legend />
-            <Bar dataKey="ciega" name="QB lanzó a ciegas (éxito %)" fill="#2F7D4F">
+            <Bar dataKey="ciega" name="Lanzó antes de la revelación" fill="#2F7D4F">
               <ErrorBar dataKey="errCiega" direction="x" stroke="#1f4f33" />
             </Bar>
-            <Bar dataKey="leida" name="QB alcanzó a leer (éxito %)" fill="#dc2626">
+            <Bar dataKey="leida" name="Lanzó después de la revelación" fill="#dc2626">
               <ErrorBar dataKey="errLeida" direction="x" stroke="#7f1d1d" />
             </Bar>
           </BarChart>

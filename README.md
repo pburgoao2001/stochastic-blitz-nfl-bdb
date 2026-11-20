@@ -8,6 +8,7 @@ La defensa esconde su cobertura y el QB intenta leerla antes de soltar el balón
 - Casi siempre el disfraz consiste en **mostrar un alto y jugar dos altos**.
 - La mitad de los disfraces sigue oculta a los **3.0 s** (IC90 2.9-3.1). Para entonces el QB ya lanzó el 64% de los pases.
 - Lanzar antes de que se revele **no se asocia con una diferencia clara de éxito**: -1.9 pp (IC90 -6.6 a +2.3, n = 1,168). El resultado se mantiene con Mantel-Haenszel y sin las jugadas con `flag_linea`.
+- El ranking por defensa es moderadamente estable: split-half r = 0.68 y Spearman-Brown 0.81; con divisiones al azar, r ≈ 0.53. Además refleja en parte la mezcla de coberturas: r = 0.53 con la tasa de dos altos.
 - **Nota de interpretación:** el error del lector es no diferencial (nunca ve el resultado de la jugada), así que el efecto de jugar "a ciegas" está sesgado hacia 0. Es una estimación conservadora. Como el IC incluye el 0, tampoco permite afirmar su signo. Es una asociación, no un efecto causal.
 
 Detalle, tablas y límites en [docs/descubrimiento.md](docs/descubrimiento.md); las decisiones de método, en [docs/decisiones.md](docs/decisiones.md).
