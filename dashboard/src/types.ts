@@ -20,7 +20,7 @@ export interface ResumenData {
   contraste: Contraste[]
   revelacion: Revelacion
   validacion: { exactitud: number; auc: number; brier: number; exactitud_regla: number; n: number; texto: string }
-  estabilidad: { r: number; spearman_brown: number }
+  estabilidad?: { r: number | null; spearman_brown: number | null } | null
   sankey: {
     nodes: Array<{ name: string }>
     links: Array<{ source: number; target: number; value: number }>
@@ -31,6 +31,6 @@ export interface RivalData {
   equipo: string
   filas: Array<{ muestra: string; juega_un_alto: { p: number; ic90: IC90; n: number } }>
   formaciones: Array<{ formacion: string; exito: { p: number; ic90: IC90; n: number } }>
-  validacion_tarjeta: { brier_mezcla: number; brier_liga: number; brier_equipo: number }
+  validacion_tarjeta?: { brier_mezcla?: number | null; brier_liga?: number | null; brier_equipo?: number | null } | null
   frases: string[]
 }

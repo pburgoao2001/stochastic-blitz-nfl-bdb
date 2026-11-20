@@ -15,8 +15,8 @@ Definiciones (ver docs/decisiones.md):
     lector de 3 clases cuando decide (validación, semanas 7-8). El bootstrap remuestrea partidos del
     universo y, por separado, partidos de la validación.
   - efecto: efecto marginal promedio de ciega sobre exito, en puntos porcentuales, entre jugadas con disfraz.
-    El error del lector es no diferencial respecto al éxito (el lector no usa el resultado de la jugada),
-    así que el efecto de lanzar a ciegas está sesgado hacia 0: es una estimación conservadora.
+    El error del lector depende de t_pase, así que el sesgo del efecto puede ir en cualquier dirección.
+  - carrera: fracción de jugadas con disfraz en que el QB lanzó antes de la revelación (ciega).
 """
 from __future__ import annotations
 
@@ -281,9 +281,27 @@ def _con_signo(x: float) -> str:
     return f"{x:+.1f}".replace("-", "−")
 
 
-def _titular(rev: dict, lanzado: float, dos_altos: float, ef: dict) -> str:
-    """Titular con los números calculados: mediana de revelación, % lanzado a esa mediana, disfraz
-    corregido en coberturas de dos altos y efecto de lanzar a ciegas."""
+def carrera() -> dict:
+    """Fracción de disfraces en que el QB lanzó antes de la revelación (ciega), con IC 90% por partido."""
+    d = _con_disfraz(_datos()[0])
+    lo, hi = intervalo(bootstrap_partidos(d, lambda x: x["ciega"].mean(), B, SEMILLA))
+    return {"valor": float(d["ciega"].mean()), "ic90": [float(lo), float(hi)], "n": int(len(d))}
+
+
+def _titular(car: dict, dos_altos: float, ef: dict) -> str:
+    """Titular con los números calculados: quién gana la carrera (fracción de disfraces lanzados antes de
+    la revelación), disfraz corregido en coberturas de dos altos y efecto de lanzar a ciegas."""
+    p, (lo_c, hi_c) = car["valor"], car["ic90"]
+    ic_c = f"IC90 {lo_c * 100:.1f}–{hi_c * 100:.1f}"
+    if lo_c <= 0.5 <= hi_c:
+        inicio = (f"La carrera es un volado: cuando la defensa disfraza, el QB lanza antes de que se revele la "
+                  f"cobertura en la mitad de las jugadas ({p:.1%}, {ic_c}).")
+    elif p > 0.5:
+        inicio = (f"La defensa gana la carrera: cuando disfraza, el QB lanza antes de que se revele la cobertura "
+                  f"en el {p:.1%} de las jugadas ({ic_c}).")
+    else:
+        inicio = (f"El QB gana la carrera: cuando la defensa disfraza, lanza antes de que se revele la cobertura "
+                  f"solo en el {p:.1%} de las jugadas ({ic_c}).")
     v, (lo, hi) = ef["valor_pp"], ef["ic90"]
     if lo > 0:
         relacion = "se asocia con más éxito"
@@ -291,16 +309,11 @@ def _titular(rev: dict, lanzado: float, dos_altos: float, ef: dict) -> str:
         relacion = "se asocia con menos éxito"
     else:
         relacion = "no se asocia con una diferencia clara de éxito"
+    disfraz = (f"El disfraz casi siempre es mostrar un safety profundo y jugar con dos "
+               f"({dos_altos:.0%} de las coberturas de dos altos que el lector decide en el snap).")
     efecto = (f"Lanzar antes de la revelación {relacion}: {_con_signo(v)} pp "
               f"(IC90 {_con_signo(lo)} a {_con_signo(hi)}, n={ef['n']:,}).")
-    disfraz = (f"El disfraz casi siempre es mostrar un safety profundo y jugar con dos "
-               f"({dos_altos:.0%} de las coberturas de dos altos).")
-    if rev["mediana_s"] is None:
-        return f"La defensa gana la carrera: la mitad de los disfraces no se revela antes del pase. {disfraz} {efecto}"
-    quien = "La defensa gana la carrera" if lanzado >= 0.5 else "El QB gana la carrera"
-    lo_r, hi_r = rev["ic90"]
-    return (f"{quien}: la cobertura se revela con mediana de {rev['mediana_s']:.1f} s (IC90 {lo_r:.1f}–{hi_r:.1f}) "
-            f"y para entonces ya salió el {lanzado:.0%} de los pases. {disfraz} {efecto}")
+    return f"{inicio} {disfraz} {efecto}"
 
 
 def _mitades(j: pd.DataFrame) -> pd.DataFrame:
@@ -336,10 +349,8 @@ def resumen() -> dict:
     idd = indice_disfraz()
     ef = efecto_ciega(j)
     revelacion, _ = _revelacion(j)
-    med = revelacion["mediana_s"]
-    lanzado = float((j["t_pase"] <= med + 1e-9).mean()) if med is not None else math.nan
     return {
-        "titular": _titular(revelacion, lanzado, idd["por_clase"]["juega_abierto"]["corregido"], ef),
+        "titular": _titular(carrera(), idd["por_clase"]["juega_abierto"]["corregido"], ef),
         "n_jugadas": int(len(j)),
         "id_liga": {"valor": _num(idd["observado"]), "ic90": _ic(*idd["observado_ic90"]), "n": idd["n"]},
         "efecto": {"valor_pp": _num(ef["valor_pp"], 2), "ic90": _ic(*ef["ic90"], 2), "n": ef["n"],

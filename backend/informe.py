@@ -14,19 +14,34 @@ SISTEMA = (
     "Usa SOLO los números del bloque HECHOS y cita cada uno con su n. "
     "'Antes de la revelación' describe el momento del lanzamiento, no un error del QB. "
     "No inventes jugadores, jugadas ni números. "
-    "Termina con una recomendación concreta de preparación."
+    "Termina con una recomendación concreta de preparación. "
+    "La única recomendación permitida es: 'cuando esta defensa muestre un alto en el snap, "
+    "prepara la lectura de rotación a dos altos', citando la probabilidad de rotación a dos altos "
+    "con su n tal como aparece en HECHOS. No recomiendes lecturas rápidas ni nada que HECHOS no sostenga. "
+    "Si HECHOS no trae esa probabilidad, no hagas recomendación."
 )
 
 MAX_PALABRAS = 160
 NUMEROS_LIBRES = {"1", "2", "3", "4"}  # downs
+UMBRAL_N = 15
 
 
 def _pct(x: float) -> str:
-    return f"{x * 100:.1f}%"
+    return f"{x * 100:.0f}%"
 
 
-def _idx(x: float) -> str:
-    return f"{x:.2f}"
+def _ic(lo: float, hi: float, n: float) -> str:
+    """'IC90 48–58%, n=210' (porcentajes sin decimales, igual que el dashboard)."""
+    return f"IC90 {lo * 100:.0f}–{hi * 100:.0f}%, n={int(n)}"
+
+
+def _est(p: float, lo: float, hi: float, n: float) -> str:
+    return f"{_pct(p)} ({_ic(lo, hi, n)})"
+
+
+def _pp(x: float) -> str:
+    t = f"{abs(x):.1f}"
+    return f"\u2212{t} pp" if x < 0 and float(t) != 0 else f"+{t} pp"
 
 
 def _seg(x: float) -> str:
@@ -46,7 +61,7 @@ def construir_hechos(
     fila = next((e for e in equipos if e.get("equipo") == equipo), None)
     if fila is not None:
         i = fila["id"]
-        id_txt = f"{_idx(i['valor'])} (IC90 {_idx(i['ic90'][0])} a {_idx(i['ic90'][1])}, n={int(i['n'])})"
+        id_txt = _est(i["valor"], i["ic90"][0], i["ic90"][1], i["n"])
         lineas.append(f"Índice de disfraz (ID) de {equipo}: {id_txt}")
         partes.append(f"{equipo} tiene un índice de disfraz de {id_txt}")
         rev = _seg(fila["revelacion_mediana_s"])
@@ -56,7 +71,7 @@ def construir_hechos(
     li = resumen.get("id_liga")
     liga_txt = None
     if li:
-        liga_txt = f"{_idx(li['valor'])} (IC90 {_idx(li['ic90'][0])} a {_idx(li['ic90'][1])}, n={int(li['n'])})"
+        liga_txt = _est(li["valor"], li["ic90"][0], li["ic90"][1], li["n"])
         lineas.append(f"Índice de disfraz (ID) de la liga: {liga_txt}")
 
     riv = None
@@ -67,15 +82,23 @@ def construir_hechos(
             riv = None
     frases: list[str] = []
     filas_txt: list[str] = []
+    rec_txt: Optional[str] = None
     if riv:
         for f in riv.get("filas", []):
             j = f["juega_un_alto"]
-            t = f"{_pct(j['p'])} (IC90 {_pct(j['ic90'][0])} a {_pct(j['ic90'][1])}, n={int(j['n'])})"
+            t = _est(j["p"], j["ic90"][0], j["ic90"][1], j["n"])
             filas_txt.append(f"formación {f['muestra']}: {t}")
             lineas.append(f"Safety alto con formación {f['muestra']}: {t}")
+            if f.get("muestra") == "cerrado" and rec_txt is None:
+                lo, hi = 1 - j["ic90"][1], 1 - j["ic90"][0]
+                rec_txt = f"rota a dos altos en {_pct(1 - j['p'])} de las jugadas ({_ic(lo, hi, j['n'])})"
+                if j["n"] < UMBRAL_N:
+                    rec_txt += " (muestra chica)"
         frases = [str(x) for x in riv.get("frases", [])][:3]
         for k, fr in enumerate(frases, 1):
             lineas.append(f"Frase clave {k}: {fr}")
+    if rec_txt:
+        lineas.append(f"Cuando muestra un alto en el snap, {rec_txt}")
 
     hechos = "\n".join(lineas)
 
@@ -90,20 +113,30 @@ def construir_hechos(
         base += " Uso de un safety alto: " + "; ".join(filas_txt) + "."
     if frases:
         base += " " + " ".join(frases)
-    base += " Recomendación: prepara al QB para decidir con cobertura disfrazada y practica lecturas rápidas antes de la revelación."
+    if rec_txt:
+        base += (
+            " Recomendación: cuando esta defensa muestre un alto en el snap, prepara la lectura "
+            f"de rotación a dos altos ({rec_txt})."
+        )
     return hechos, base
 
 
 def verificar(texto: str, hechos: str) -> bool:
-    """True si el texto es aceptable: no vacío, longitud razonable y sin números inventados."""
+    """True si el texto es aceptable: no vacío, longitud razonable y sin números inventados.
+
+    Compara números completos (tokens), no subcadenas; la coma decimal se normaliza a punto.
+    """
     if not texto or not texto.strip():
         return False
     if len(texto.split()) > MAX_PALABRAS:
         return False
-    for num in re.findall(r"\d+(?:[.,]\d+)?", texto):
+    patron = r"\d+(?:[.,]\d+)?"
+    permitidos = {t.replace(",", ".") for t in re.findall(patron, hechos)}
+    for num in re.findall(patron, texto):
+        num = num.replace(",", ".")
         if num in NUMEROS_LIBRES:
             continue
-        if num not in hechos:
+        if num not in permitidos:
             return False
     return True
 

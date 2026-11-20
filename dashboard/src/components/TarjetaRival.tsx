@@ -1,8 +1,19 @@
 import { useEffect, useState } from 'react'
 import type { EquipoRow, RivalData } from '../types'
+import { decimal3, icN, muestraChica, porcentaje } from '../formato'
 
 const DISTANCIAS = ['1-3', '4-6', '7+']
-const pct = (x: number) => `${(x * 100).toFixed(0)}%`
+
+function Estimacion({ etiqueta, p, ic, n }: { etiqueta: string; p: number; ic: [number, number]; n: number }) {
+  const chica = muestraChica(n)
+  return (
+    <li className={chica ? 'text-gray-400' : undefined}>
+      {etiqueta}: <b>{porcentaje(p)}</b>{' '}
+      <span className="text-gray-500">({icN(ic, n)})</span>
+      {chica && <span className="ml-1 text-xs italic">muestra chica</span>}
+    </li>
+  )
+}
 
 export default function TarjetaRival({ equipos }: { equipos: EquipoRow[] }) {
   const [equipo, setEquipo] = useState('')
@@ -72,15 +83,23 @@ export default function TarjetaRival({ equipos }: { equipos: EquipoRow[] }) {
       {rival && (
         <div className="grid md:grid-cols-2 gap-4 mt-4 text-sm">
           <div>
-            <h3 className="font-semibold mb-1">Formaciones (éxito, IC 90%)</h3>
-            <ul className="space-y-1">
-              {rival.formaciones.map((f) => (
-                <li key={f.formacion}>
-                  {f.formacion}: <b>{pct(f.exito.p)}</b>{' '}
-                  <span className="text-gray-500">({pct(f.exito.ic90[0])} a {pct(f.exito.ic90[1])}, n={f.exito.n})</span>
-                </li>
+            <h3 className="font-semibold mb-1">Juega un alto (por muestra)</h3>
+            <ul className="space-y-1 mb-3">
+              {rival.filas.map((f) => (
+                <Estimacion key={f.muestra} etiqueta={f.muestra} p={f.juega_un_alto.p} ic={f.juega_un_alto.ic90} n={f.juega_un_alto.n} />
               ))}
             </ul>
+            <h3 className="font-semibold mb-1">Formaciones (éxito)</h3>
+            <ul className="space-y-1">
+              {rival.formaciones.map((f) => (
+                <Estimacion key={f.formacion} etiqueta={f.formacion} p={f.exito.p} ic={f.exito.ic90} n={f.exito.n} />
+              ))}
+            </ul>
+            <p className="text-xs text-gray-500 mt-2">
+              Brier: mezcla {decimal3(rival.validacion_tarjeta?.brier_mezcla)} · solo liga{' '}
+              {decimal3(rival.validacion_tarjeta?.brier_liga)} · solo equipo{' '}
+              {decimal3(rival.validacion_tarjeta?.brier_equipo)} (menor es mejor)
+            </p>
           </div>
           <div>
             <h3 className="font-semibold mb-1">Frases clave</h3>

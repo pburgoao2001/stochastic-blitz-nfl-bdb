@@ -19,6 +19,7 @@ Todas las cifras salen de `backend/analisis/` (`python -m backend.analisis.metri
 | … cuando juega un alto (observado / corregido) | 9.0% / 0% | 7.9-10.2 / 0-2.7 | 2,968 |
 | Mediana del tiempo hasta revelar (Kaplan-Meier) | 3.0 s | 2.9-3.1 | 1,279 (643 revelaciones) |
 | Probabilidad de seguir disfrazado a 2.5 s | 0.60 | 0.57-0.62 (Greenwood) | 1,279 |
+| **Disfraces lanzados antes de la revelación** (a ciegas) | **49.7%** | 47.3-52.3 | 1,279 |
 | Pases ya lanzados a 2.5 s / a 3.0 s (todos) | 38.8% / 64.0% | 37.6-40.0 / 62.7-65.1 | 6,380 |
 | **Efecto de lanzar a ciegas** (efecto marginal promedio) | **-1.9 pp** | -6.6 a +2.3 | 1,168 |
 | … Mantel-Haenszel por tramos de t_pase | -1.1 pp | -5.7 a +3.0 | 1,168 |
@@ -32,7 +33,7 @@ Todas las cifras salen de `backend/analisis/` (`python -m backend.analisis.metri
 | 2.5 s o más | 50.0% (45.8-54.3), n = 372 | 47.3% (43.3-51.2), n = 436 |
 | total | 50.3% (47.0-53.7), n = 584 | 50.5% (47.1-53.9), n = 584 |
 
-**Lectura.** El disfraz casi siempre va en una dirección: la defensa **muestra un alto en el snap y termina jugando dos altos**. Ocurre en el 59% de las coberturas de dos altos ya corregido el error del lector; lo contrario prácticamente no aparece. La mitad de los disfraces sigue sin revelarse a los 3.0 s, y para entonces el QB ya lanzó el 64% de los pases. Lanzar antes de que se revele no se asocia con una diferencia clara de éxito. La tabla cruda sugiere que lanzar a ciegas va peor en los pases rápidos (< 2.5 s), pero los intervalos se traslapan y no hay una prueba pre-registrada de esa interacción.
+**Lectura.** El disfraz casi siempre va en una dirección: la defensa **muestra un alto en el snap y termina jugando dos altos**. Ocurre en el 59% de las coberturas de dos altos ya corregido el error del lector; lo contrario prácticamente no aparece. **La carrera es un volado:** cuando la defensa disfraza, el QB lanza antes de la revelación en el 49.7% de las jugadas (IC90 47.3-52.3). La mediana de revelación de 3.0 s supone que el momento del pase no depende de la revelación (ver límite 2). Lanzar antes de que se revele no se asocia con una diferencia clara de éxito. La tabla cruda sugiere que lanzar a ciegas va peor en los pases rápidos (< 2.5 s), pero los intervalos se traslapan y no hay una prueba pre-registrada de esa interacción.
 
 ## Ranking por defensa
 
@@ -46,7 +47,7 @@ El ID por defensa usa Bayes empírico: una beta-binomial con mu = 0.275 y kappa 
 
 ## Cómo interpretar el efecto
 
-- **El error del lector es no diferencial:** el lector solo usa posiciones defensivas antes del pase y nunca ve el resultado de la jugada. Clasificar mal "a ciegas" contra "leída" sesga el efecto hacia 0, así que **el efecto estimado es conservador**. Hay un matiz: como el IC incluye el 0, el sesgo hacia 0 dice que un efecto real podría estar escondido, pero no dice su signo.
+- **Dirección del sesgo:** el error del lector depende de t_pase, así que el sesgo del efecto puede ir en cualquier dirección. Por ejemplo, las jugadas largas tienen más cuadros en los que el lector puede cambiar antes del pase (límite 3), y el éxito también depende de t_pase.
 - Es una asociación ajustada por tramo de t_pase, down, distancia, zona, n_rushers, shotgun y play action. **No es un efecto causal.**
 
 ## Límites
@@ -57,5 +58,8 @@ El ID por defensa usa Bayes empírico: una beta-binomial con mu = 0.275 y kappa 
 4. **El ranking por equipo refleja en parte la mezcla de coberturas:** el ID observado de cada equipo tiene r = 0.53 con su proporción de dos altos. Ver "Ranking por defensa".
 5. El lector se entrenó y validó solo con pases de t_pase ≥ 3 s, y aquí se aplica a todos los cuadros.
 6. La zona roja quedó casi vacía por el universo (`dist_endzone` ≥ 20): tiene 1 jugada.
+7. **Sacks fuera del universo.** Los 543 sacks de `plays.csv` no entran, porque sin pase no hay t_pase. El análisis está condicionado a que el QB alcanzó a lanzar, y el sack es justo el caso en que la defensa gana la carrera.
+8. **El lector no está validado en el snap:** se validó a 2.0 s en pases de ≥ 3 s y aquí se aplica en el snap. Aun así, una regla geométrica que no se entrenó encuentra la misma asimetría en el snap: 52.7% de disfraz en coberturas de dos altos (n = 2,349) contra 13.7% en las de un alto (n = 3,275). La dirección del disfraz no depende del lector, pero su magnitud (59%) no se puede identificar sin una etiqueta de estructura en el snap. Cifras de la revisión independiente (`docs/revision.md`); no las recalculé aquí.
+9. **t_pase podría ser mediador:** si el QB lanza porque vio la revelación, ajustar por t_pase puede introducir sesgo. El efecto cambia poco con la especificación: −1.6 pp con escalones de 0.25 s, −1.5 pp cúbico y −0.9 pp sin t_pase. Ningún IC excluye 0. Son cifras de la revisión (B = 200), no recalculadas aquí.
 
 **Solidez del titular: 3 de 5.** La validación del lector, la simetría de la normalización y la robustez a `flag_linea` y al método son sólidas. Lo que la limita es la corrección por error (supone que el error se transfiere al snap) y la definición de revelación (censura informativa y ruido).

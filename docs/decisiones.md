@@ -30,7 +30,7 @@ Decisiones tomadas antes de calcular el efecto:
 2. **Muestra:** solo cuenta si el lector decide en el snap (P ≥ 0.65 o ≤ 0.35). Las indeterminadas en el snap (1,774) quedan fuera del análisis de disfraz.
 3. **Disfraz** = muestra decidida distinta de juega. Se reportan el ID observado y el ID corregido con Rogan-Gladen, calculado dentro de cada clase de PFF con la sensibilidad y la especificidad del lector de 3 clases cuando decide (semanas 7-8). El bootstrap remuestrea por partido el universo y, por separado, la validación. **El titular usa el corregido.** En la API, `id_liga` y `equipos` están en escala observada, que es la comparable entre sí.
 4. **revela_t:** primer cuadro desde el cual el lector decide la clase de PFF y ya no cambia hasta el pase. Si eso no pasa antes del cuadro del pase, se censura en `t_pase` (Kaplan-Meier).
-5. El error del lector es no diferencial, así que el efecto de "a ciegas" está sesgado hacia 0: es una estimación conservadora. Queda escrito en `descubrimiento.md` y en el `README`.
+5. El error del lector depende de t_pase, así que el sesgo del efecto puede ir en cualquier dirección. Queda escrito en `descubrimiento.md` y en el `README`. Corregido tras la revisión (B2).
 6. **Sensibilidad:** efecto principal sin `flag_linea`, -1.4 pp (IC90 -6.2 a +2.7, n = 1,146), contra -1.9 pp (IC90 -6.6 a +2.3, n = 1,168) completo. **Hecha.**
 
 Definiciones:
@@ -42,4 +42,5 @@ Definiciones:
 
 - **Titular:** se genera con una plantilla a partir de los números calculados: mediana de revelación y su IC, % de pases lanzados a esa mediana, disfraz corregido en coberturas de dos altos y efecto de lanzar a ciegas. Comprobé que es idéntico, carácter por carácter, al texto pedido.
 - **Estabilidad (`resumen()["estabilidad"]`):** split-half del ID por defensa. Se comparan los partidos impares (1.º, 3.º, …) contra los pares de cada defensa, en orden cronológico, con Bayes empírico (beta-binomial) en cada mitad. Se reportan la r de Pearson entre las medias posteriores de las dos mitades y Spearman-Brown, 2r/(1 + r).
+- **Titular, corregido tras la revisión (B1):** el veredicto sale de la fracción de disfraces lanzados antes de la revelación, 636/1,279 = 49.7%, con IC90 por bootstrap por partido de 47.3 a 52.3 (B = 300, semilla 2026). Como el IC contiene el 50%, el titular dice "la carrera es un volado". El IC de Wilson (47.4-52.0) no se usa porque es por jugada. El 64% salió del titular: se calculaba sobre todos los pases y no solo sobre los disfrazados.
 - **Intervalo de la estabilidad:** el bootstrap por partido queda sesgado hacia abajo, porque remuestrear partidos con reemplazo duplica jugadas dentro de una mitad y mete ruido. Por eso se reporta el IC Fisher z sobre los 32 equipos y, además, la variación de r entre 50 divisiones al azar balanceadas por equipo (`cifras_extra()`).
