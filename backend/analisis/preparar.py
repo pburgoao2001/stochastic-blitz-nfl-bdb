@@ -463,8 +463,10 @@ def preparar_replays() -> None:
         fila, frames, cand, rango = hallada
         revela = None if clase.startswith("a") else float(fila["revela_t"])
         texto = str(descripciones.loc[(int(fila["gameId"]), int(fila["playId"])), "playDescription"])[:140]
+        altos = "un alto" if fila["juega"] == "cerrado" else "dos altos"
+        lectura = f" · muestra {fila['muestra']} → juega {fila['pff_passCoverage']} ({altos}, PFF)"
         replays.append({"gameId": str(int(fila["gameId"])), "playId": str(int(fila["playId"])),
-                        "descripcion": texto + SUFIJO_REPLAY, "frames": frames,
+                        "descripcion": texto + SUFIJO_REPLAY + lectura, "frames": frames,
                         "eventos": {"snap": 0.0, "revela": revela, "lanza": float(fila["t_pase"])}})
         elegidas.append({"clase": clase, "gameId": int(fila["gameId"]), "playId": int(fila["playId"]),
                          "defensa": fila["defensiveTeam"], "ataque": fila["possessionTeam"],

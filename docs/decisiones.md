@@ -37,7 +37,11 @@ Definiciones:
 - **Éxito:** queda vacío si hubo castigo (`foulName1`). En 1.er down, `prePenaltyPlayResult` ≥ 0.4·yardsToGo; en 2.º, ≥ 0.6·yardsToGo; en 3.º y 4.º, ≥ yardsToGo. Las intercepciones cuentan como fracaso.
 - **Efecto:** logística por IRLS de éxito sobre ciega, entre jugadas con disfraz. Controles: tramos de t_pase (<2.0, 2.0-2.5, 2.5-3.0, ≥3.0), down, distancia (1-3, 4-6, 7+), zona (propia > 50, medio 20-50, roja ≤ 20; la roja tiene 1 jugada), n_rushers, shotgun y play action. Se usa l2 = 1e-6 solo por estabilidad numérica. Se reporta el efecto marginal promedio en pp. Convergieron las 300 réplicas; si no, se usaría Mantel-Haenszel.
 - **equipos():** beta-binomial empírico sobre disfraz/decididas por defensa (mu = 0.275, kappa = 35.5). El IC sale de 20,000 sorteos de la posterior. La mediana de revelación queda vacía si el equipo tiene menos de 20 jugadas con disfraz.
-- **rival():** P(juega un alto | lo que muestra en el snap), encogida hacia la liga con kappa beta-binomial. La `validacion_tarjeta` es el Brier en semanas 7-8 usando las semanas 1-6: mezcla 0.197, liga 0.203, equipo 0.199. El éxito por formación lleva IC de Wilson.
+- **rival():** P(juega un alto | lo que muestra en el snap), encogida hacia la liga con kappa beta-binomial.
+  - La celda de la liga es la de la situación pedida si tiene al menos 30 jugadas. Si no, se quita la distancia, y si aún no alcanza, también el down.
+  - kappa no puede ser mayor que el número de jugadas de esa celda.
+  - Con n = 0 se muestra la tendencia de la liga con su IC90. `p` e `ic90` nunca son `null`.
+- **Curva de lanzamiento** (`revelacion.lanzamiento`): se calcula sobre las 1,279 jugadas con disfraz, la misma población que la curva de Kaplan-Meier, y ya no sobre todo el universo. La `validacion_tarjeta` es el Brier en semanas 7-8 usando las semanas 1-6: mezcla 0.197, liga 0.203, equipo 0.199. El éxito por formación lleva IC de Wilson.
 ## P6b: titular final y estabilidad
 
 - **Titular:** se genera con una plantilla a partir de los números calculados: mediana de revelación y su IC, % de pases lanzados a esa mediana, disfraz corregido en coberturas de dos altos y efecto de lanzar a ciegas. Comprobé que es idéntico, carácter por carácter, al texto pedido.

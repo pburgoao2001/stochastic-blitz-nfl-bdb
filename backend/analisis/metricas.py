@@ -40,6 +40,8 @@ CORTES_T = [2.0, 2.5, 3.0]
 TRAMOS_T = ["<2.0", "2.0-2.5", "2.5-3.0", ">=3.0"]
 TRAMOS_DIST = ["1-3", "4-6", "7+"]
 MIN_DISFRAZ_EQUIPO = 20
+MUESTRA_CHICA = 10  # en rival(): por debajo de esto la frase avisa que la estimación se acerca a la liga
+MIN_LIGA = 30       # en rival(): jugadas mínimas de la celda de la liga hacia la que se encoge
 SORTEOS = 20000
 NODOS_SANKEY = ["Muestra cerrada", "Muestra abierta", "Sin disfraz", "Disfraz leído a tiempo", "A ciegas",
                 "Éxito", "Fracaso"]
@@ -242,7 +244,8 @@ def _revelacion(j: pd.DataFrame) -> tuple[dict, dict]:
     for t in REJILLA_T:
         s, a, b = _s_en(km, t)
         curva.append({"t": float(t), "s": _num(s), "lo": _num(a), "hi": _num(b)})
-    lanzamiento = [{"t": float(t), "acumulado": _num((j["t_pase"] <= t + 1e-9).mean())} for t in REJILLA_T]
+    # Misma población que la curva de Kaplan-Meier: las jugadas con disfraz.
+    lanzamiento = [{"t": float(t), "acumulado": _num((d["t_pase"] <= t + 1e-9).mean())} for t in REJILLA_T]
     salida = {"mediana_s": _num(_mediana_km(d), 2), "ic90": _ic(lo, hi, 2),
               "prob_disfrazado_2_5s": _num(_s_en(km, 2.5)[0]), "curva": curva, "lanzamiento": lanzamiento}
     diag = {"n": int(len(d)), "eventos": int(d["evento_revela"].sum()),
@@ -393,19 +396,27 @@ def equipos() -> list[dict]:
     return [dict(e) for e in _equipos()[0]]
 
 
-def _un_alto(celda: pd.DataFrame, equipo: str, rng: np.random.Generator) -> dict:
-    """P(juega un alto) del equipo en la celda, encogida hacia la liga con kappa beta-binomial."""
-    n_liga = len(celda)
-    propio = celda[celda["defensiveTeam"] == equipo]
-    n, x = len(propio), int((propio["juega"] == "cerrado").sum())
-    if n_liga == 0:
-        return {"p": None, "ic90": [None, None], "n": 0}
-    mu = min(max(float((celda["juega"] == "cerrado").mean()), 1e-3), 1 - 1e-3)
-    por = celda.assign(u=celda["juega"] == "cerrado").groupby("defensiveTeam")["u"].agg(["sum", "size"])
-    kappa = betabinom_eb(por["sum"], por["size"], media=mu)["kappa"]
+def _filtrar(d: pd.DataFrame, down: int | None, distancia: str | None) -> pd.DataFrame:
+    if down is not None:
+        d = d[d["down"] == int(down)]
+    if distancia is not None:
+        d = d[d["tramo_dist"] == distancia]
+    return d
+
+
+def _un_alto(liga: pd.DataFrame, x: int, n: int, rng: np.random.Generator) -> dict:
+    """P(juega un alto) del equipo (x de n en su celda), encogida hacia la liga con kappa beta-binomial.
+
+    Con n = 0 es la tendencia de la liga con su IC90 (la Beta previa). liga nunca está vacía (ver rival).
+    kappa se limita al número de jugadas de la liga: la previa no puede pesar más que los datos que la
+    sostienen (en celdas chicas la beta-binomial no detecta sobredispersión y kappa se iría al borde).
+    """
+    mu = min(max(float((liga["juega"] == "cerrado").mean()), 1e-3), 1 - 1e-3)
+    por = liga.assign(u=liga["juega"] == "cerrado").groupby("defensiveTeam")["u"].agg(["sum", "size"])
+    kappa = min(betabinom_eb(por["sum"], por["size"], media=mu)["kappa"], float(len(liga)))
     a, b = x + mu * kappa, n - x + (1 - mu) * kappa
     lo, hi = np.quantile(rng.beta(a, b, SORTEOS), [0.05, 0.95])
-    return {"p": _num(a / (a + b)), "ic90": _ic(lo, hi), "n": n}
+    return {"p": _num(a / (a + b)), "ic90": _ic(lo, hi), "n": int(n)}
 
 
 @lru_cache(maxsize=1)
@@ -436,14 +447,22 @@ def rival(equipo: str, down: int | None = None, distancia: str | None = None) ->
     if distancia is not None:  # "7+" sin codificar en la URL llega como "7 "
         distancia = distancia.strip()
         distancia = "7+" if distancia == "7" else distancia
-    d = _decididas(j)
-    e = j[(j["defensiveTeam"] == equipo) & j["exito"].notna()]
-    if down is not None:
-        d, e = d[d["down"] == int(down)], e[e["down"] == int(down)]
-    if distancia is not None:
-        d, e = d[d["tramo_dist"] == distancia], e[e["tramo_dist"] == distancia]
+    decididas = _decididas(j)
+    d = _filtrar(decididas, down, distancia)
+    e = _filtrar(j[(j["defensiveTeam"] == equipo) & j["exito"].notna()], down, distancia)
     rng = np.random.default_rng(SEMILLA)
-    filas = [{"muestra": m, "juega_un_alto": _un_alto(d[d["muestra"] == m], equipo, rng)} for m in ("abierto", "cerrado")]
+    filas = []
+    for m in ("abierto", "cerrado"):
+        propio = d[(d["muestra"] == m) & (d["defensiveTeam"] == equipo)]
+        # Celda de la liga para encoger: la de la situación pedida si tiene al menos MIN_LIGA jugadas;
+        # si no, sin distancia; luego sin down (esa siempre tiene miles).
+        for dn, ds in ((down, distancia), (down, None), (None, None)):
+            liga = _filtrar(decididas, dn, ds)
+            liga = liga[liga["muestra"] == m]
+            if len(liga) >= MIN_LIGA:
+                break
+        filas.append({"muestra": m, "juega_un_alto": _un_alto(liga, int((propio["juega"] == "cerrado").sum()),
+                                                              len(propio), rng)})
     formaciones = []
     for formacion, s in sorted(e.groupby("offenseFormation"), key=lambda g: -len(g[1]))[:4]:
         p, lo, hi = wilson(int(s["exito"].sum()), len(s))
@@ -453,12 +472,17 @@ def rival(equipo: str, down: int | None = None, distancia: str | None = None) ->
     frases = []
     for fila in reversed(filas):  # primero "cerrado"
         u = fila["juega_un_alto"]
-        if u["p"] is None or u["n"] == 0:
-            frases.append(f"Sin jugadas de {equipo} mostrando {fila['muestra']} en el snap{sit}; "
-                          "la estimación sería solo la tendencia de la liga.")
+        ic = f"IC90 {u['ic90'][0]:.0%}-{u['ic90'][1]:.0%}"
+        if u["n"] == 0:
+            frases.append(f"Sin jugadas de {equipo} mostrando {fila['muestra']} en el snap{sit}: se muestra la "
+                          f"tendencia de la liga, que juega un alto el {u['p']:.0%} de las veces ({ic}).")
+        elif u["n"] < MUESTRA_CHICA:
+            frases.append(f"Cuando {equipo} muestra {fila['muestra']} en el snap{sit}, termina jugando un alto "
+                          f"el {u['p']:.0%} de las veces ({ic}, n={u['n']}); con tan pocas jugadas, la "
+                          "estimación se acerca a la tendencia de la liga.")
         else:
             frases.append(f"Cuando {equipo} muestra {fila['muestra']} en el snap{sit}, termina jugando un alto "
-                          f"el {u['p']:.0%} de las veces (IC90 {u['ic90'][0]:.0%}-{u['ic90'][1]:.0%}, n={u['n']}).")
+                          f"el {u['p']:.0%} de las veces ({ic}, n={u['n']}).")
     if formaciones:
         f = max(formaciones, key=lambda x: x["exito"]["n"])
         frases.append(f"La formación más usada contra {equipo}{sit} es {f['formacion']}: éxito "
@@ -477,13 +501,23 @@ def replays() -> list[dict]:
 
 # --- Revisión -----------------------------------------------------------------------------------
 
+def lanzado_con_disfraz() -> dict:
+    """Fracción de jugadas con disfraz ya lanzadas a 2.5 y 3.0 s (la población de la curva de la carrera)."""
+    d = _con_disfraz(_datos()[0])
+
+    def fraccion(x: pd.DataFrame) -> np.ndarray:
+        return np.array([(x["t_pase"] <= 2.5).mean(), (x["t_pase"] <= 3.0).mean()])
+
+    ic, p = intervalo(bootstrap_partidos(d, fraccion, B, SEMILLA)), fraccion(d)
+    return {f"{t} s": {"valor": round(float(p[i]), 4), "ic90": np.round(ic[:, i], 4).tolist(), "n": int(len(d))}
+            for i, t in enumerate(("2.5", "3.0"))}
+
+
 def cifras_extra() -> dict:
     """Cifras de docs/descubrimiento.md que no están en el contrato, con su IC 90% por partido."""
     j, _, _ = _datos()
     d = _muestra_efecto(j)
     mh = bootstrap_partidos(d, _efecto_mh, B, SEMILLA)
-    lanzado = bootstrap_partidos(j, lambda x: np.array([(x["t_pase"] <= 2.5).mean(), (x["t_pase"] <= 3.0).mean()]),
-                                 B, SEMILLA)
     idd = indice_disfraz()
     # Estabilidad split-half: IC por bootstrap por partido con una rejilla gruesa de la beta-binomial.
     gruesa = {"rejilla_mu": [i / 50 for i in range(1, 50)], "rejilla_kappa": [10 ** (k / 10) for k in range(0, 41)]}
@@ -521,10 +555,7 @@ def cifras_extra() -> dict:
                                                           "fraccion_bajo_el_punto": round(float(np.mean(sh[:, 0] < punto_sh[0])), 3)}},
             "corr_id_vs_dos_altos": {"r": round(mezcla(j), 4), "ic90": np.round(intervalo(mz), 4).tolist(), "equipos": 32},
             "mh_pp": {"valor": round(_efecto_mh(d), 2), "ic90": np.round(intervalo(mh), 2).tolist(), "n": int(len(d))},
-            "lanzado_2_5s": {"valor": round(float((j["t_pase"] <= 2.5).mean()), 4),
-                             "ic90": np.round(intervalo(lanzado)[:, 0], 4).tolist(), "n": int(len(j))},
-            "lanzado_3_0s": {"valor": round(float((j["t_pase"] <= 3.0).mean()), 4),
-                             "ic90": np.round(intervalo(lanzado)[:, 1], 4).tolist(), "n": int(len(j))},
+            "lanzado_con_disfraz": lanzado_con_disfraz(),
             "id_por_clase": {k: {m: (np.round(x, 4).tolist() if isinstance(x, (list, np.ndarray)) else
                                      (round(x, 4) if isinstance(x, float) else x)) for m, x in v.items()}
                              for k, v in idd["por_clase"].items()}}

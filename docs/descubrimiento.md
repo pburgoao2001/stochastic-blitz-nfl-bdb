@@ -20,7 +20,7 @@ Todas las cifras salen de `backend/analisis/` (`python -m backend.analisis.metri
 | Mediana del tiempo hasta revelar (Kaplan-Meier) | 3.0 s | 2.9-3.1 | 1,279 (643 revelaciones) |
 | Probabilidad de seguir disfrazado a 2.5 s | 0.60 | 0.57-0.62 (Greenwood) | 1,279 |
 | **Disfraces lanzados antes de la revelación** (a ciegas) | **49.7%** | 47.3-52.3 | 1,279 |
-| Pases ya lanzados a 2.5 s / a 3.0 s (todos) | 38.8% / 64.0% | 37.6-40.0 / 62.7-65.1 | 6,380 |
+| Jugadas con disfraz ya lanzadas a 2.5 s / a 3.0 s | 35.1% / 58.8% | 32.1-37.7 / 56.0-61.4 | 1,279 |
 | **Efecto de lanzar a ciegas** (efecto marginal promedio) | **-1.9 pp** | -6.6 a +2.3 | 1,168 |
 | … Mantel-Haenszel por tramos de t_pase | -1.1 pp | -5.7 a +3.0 | 1,168 |
 | … sin las jugadas con `flag_linea` (sensibilidad) | -1.4 pp | -6.2 a +2.7 | 1,146 |
@@ -32,6 +32,8 @@ Todas las cifras salen de `backend/analisis/` (`python -m backend.analisis.metri
 | menos de 2.5 s | 50.9% (45.3-56.5), n = 212 | 60.1% (53.4-66.5), n = 148 |
 | 2.5 s o más | 50.0% (45.8-54.3), n = 372 | 47.3% (43.3-51.2), n = 436 |
 | total | 50.3% (47.0-53.7), n = 584 | 50.5% (47.1-53.9), n = 584 |
+
+**Las dos curvas de la carrera comparan la misma población.** En el dashboard, la curva de lanzamiento (`revelacion.lanzamiento`) se calcula sobre las 1,279 jugadas con disfraz, que son las mismas de la curva de Kaplan-Meier. Antes usaba las 6,380 jugadas del universo, y con eso a los 2.5 s y a los 3.0 s ya se había lanzado el 38.8% y el 64.0% de los pases. Esa comparación mezclaba poblaciones distintas.
 
 **Lectura.** El disfraz casi siempre va en una dirección: la defensa **muestra un alto en el snap y termina jugando dos altos**. Ocurre en el 59% de las coberturas de dos altos ya corregido el error del lector; lo contrario prácticamente no aparece. **La carrera es un volado:** cuando la defensa disfraza, el QB lanza antes de la revelación en el 49.7% de las jugadas (IC90 47.3-52.3). La mediana de revelación de 3.0 s supone que el momento del pase no depende de la revelación (ver límite 2). Lanzar antes de que se revele no se asocia con una diferencia clara de éxito. La tabla cruda sugiere que lanzar a ciegas va peor en los pases rápidos (< 2.5 s), pero los intervalos se traslapan y no hay una prueba pre-registrada de esa interacción.
 

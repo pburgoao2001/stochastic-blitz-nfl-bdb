@@ -1,0 +1,5 @@
+export const AZUL = '#2563eb'
+export const AZUL_OSCURO = '#1e3a8a'
+export const NARANJA = '#ea580c'
+export const NARANJA_OSCURO = '#7c2d12'
+export const SLATE = '#475569'

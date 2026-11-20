@@ -49,6 +49,14 @@ def _seg(x: float) -> str:
     return f"{x:.1f} s"
 
 
+def _completo(est: Optional[dict], p: str = "valor") -> bool:
+    """True si la estimación trae p, ic90 [lo, hi] y n sin nulls (si no, el campo se omite)."""
+    if not est:
+        return False
+    ic = est.get("ic90") or []
+    return est.get(p) is not None and est.get("n") is not None and len(ic) == 2 and None not in ic
+
+
 def construir_hechos(
     equipo: str,
     equipos: list,
@@ -61,17 +69,19 @@ def construir_hechos(
 
     fila = next((e for e in equipos if e.get("equipo") == equipo), None)
     if fila is not None:
-        i = fila["id"]
-        id_txt = _est(i["valor"], i["ic90"][0], i["ic90"][1], i["n"])
-        lineas.append(f"Índice de disfraz (ID) de {equipo}: {id_txt}")
-        partes.append(f"{equipo} tiene un índice de disfraz de {id_txt}")
-        rev = _seg(fila["revelacion_mediana_s"])
-        lineas.append(f"Mediana de revelación de {equipo}: {rev}")
-        partes.append(f"revela su cobertura en una mediana de {rev}")
+        i = fila.get("id")
+        if _completo(i):
+            id_txt = _est(i["valor"], i["ic90"][0], i["ic90"][1], i["n"])
+            lineas.append(f"Índice de disfraz (ID) de {equipo}: {id_txt}")
+            partes.append(f"{equipo} tiene un índice de disfraz de {id_txt}")
+        if fila.get("revelacion_mediana_s") is not None:
+            rev = _seg(fila["revelacion_mediana_s"])
+            lineas.append(f"Mediana de revelación de {equipo}: {rev}")
+            partes.append(f"revela su cobertura en una mediana de {rev}")
 
     li = resumen.get("id_liga")
     liga_txt = None
-    if li:
+    if _completo(li):
         liga_txt = _est(li["valor"], li["ic90"][0], li["ic90"][1], li["n"])
         lineas.append(f"Índice de disfraz (ID) de la liga: {liga_txt}")
 
@@ -85,8 +95,10 @@ def construir_hechos(
     filas_txt: list[str] = []
     rec_txt: Optional[str] = None
     if riv:
-        for f in riv.get("filas", []):
-            j = f["juega_un_alto"]
+        for f in riv.get("filas") or []:
+            j = f.get("juega_un_alto")
+            if not _completo(j, "p"):
+                continue
             t = _est(j["p"], j["ic90"][0], j["ic90"][1], j["n"])
             filas_txt.append(f"muestra {f['muestra']} en el snap → juega un alto: {t}")
             lineas.append(f"Muestra {f['muestra']} en el snap → juega un alto: {t}")
@@ -105,6 +117,8 @@ def construir_hechos(
     # Plantilla determinista con los mismos textos.
     if fila is None:
         base = f"No hay datos específicos para {equipo}."
+    elif not partes:
+        base = f"Informe semanal de {equipo}."
     else:
         base = f"Informe semanal de {equipo}: " + "; ".join(partes) + "."
     if liga_txt:

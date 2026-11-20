@@ -35,7 +35,7 @@ La dirección principal se eligió porque representa 1,013 de los 1,279 disfrace
 - `eventos`:
   - `snap` = 0 y `lanza` = t_pase.
   - `revela` = revela_t. Es `null` en la clase a, porque no hubo revelación antes del pase, y 0 en la honesta.
-- `descripcion`: `playDescription` recortada a 140 caracteres, seguida de " · ejemplo ilustrativo elegido por regla".
+- `descripcion`: `playDescription` recortada a 140 caracteres, seguida de " · ejemplo ilustrativo elegido por regla" y de lo que se mostró y se jugó, por ejemplo " · muestra cerrado → juega Quarters (dos altos, PFF)".
 
 El archivo pesa 27.6 KB.
 

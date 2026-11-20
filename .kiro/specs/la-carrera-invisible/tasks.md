@@ -26,7 +26,7 @@ Five sequential tasks follow the implementation order from the spec description.
   - [x] 1.2 Update `backend/main.py`: add startup import logic (try `metricas`, fall back to mocks, log to stderr on failure); add `GET /api/resumen`, `GET /api/equipos`, `GET /api/rival`, `GET /api/replays`, `POST /api/informe` (template only for now); retain `GET /health` unchanged; attach `X-Data-Source: mock` header where applicable.
   - [x] 1.3 Verify manually: start Uvicorn (`.venv/Scripts/uvicorn backend.main:app --reload`), hit each endpoint with curl or a browser, confirm shapes and header.
 
-- [x] 2. Build the single-page dashboard consuming the API
+- [-] 2. Build the single-page dashboard consuming the API
 
   Replace the placeholder `App.tsx` with a full single-page layout that renders all six sections. Add the Vite proxy. Each section reads from the API responses and renders with Recharts where specified.
 
@@ -48,7 +48,7 @@ Five sequential tasks follow the implementation order from the spec description.
   - [ ] 3.1 Confirm the try/except import block in `backend/main.py` (from task 1.2) covers `get_resumen`, `get_equipos`, `get_replays`, and sets `DATA_SOURCE = "real"` on success. Adjust if needed.
   - [ ] 3.2 Verify that when `metricas.py` is present and importable, `GET /api/resumen` returns its data, `X-Data-Source` header is absent, and the frontend banner does not render (manual check with a stub `metricas.py`).
 
-- [-] 4. Implement animated replay viewer
+- [x] 4. Implement animated replay viewer
 
   Replace the Repeticion placeholder with a live animation driven by `/api/replays` data.
 

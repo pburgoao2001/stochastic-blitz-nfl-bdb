@@ -1,10 +1,17 @@
 export type IC90 = [number, number]
-export interface ConIC { valor: number; ic90: IC90; n: number }
+
+export interface ConIC {
+  valor: number
+  ic90: IC90
+  n: number
+}
+
 export interface Contraste {
   estrato: string
   ciega: { exito: number; ic90: IC90; n: number }
   leida: { exito: number; ic90: IC90; n: number }
 }
+
 export interface Revelacion {
   mediana_s: number
   ic90: IC90
@@ -12,6 +19,7 @@ export interface Revelacion {
   curva: Array<{ t: number; s: number; lo: number; hi: number }>
   lanzamiento: Array<{ t: number; acumulado: number }>
 }
+
 export interface ResumenData {
   titular: string
   n_jugadas: number
@@ -19,20 +27,48 @@ export interface ResumenData {
   efecto: { valor_pp: number; ic90: IC90; n: number; metodo: string }
   contraste: Contraste[]
   revelacion: Revelacion
-  validacion: { exactitud: number; auc: number; brier: number; exactitud_regla: number; n: number; texto: string }
+  validacion: {
+    exactitud: number
+    auc: number
+    brier: number
+    exactitud_regla: number
+    n: number
+    texto: string
+  }
   estabilidad?: { r: number | null; spearman_brown: number | null } | null
   sankey: {
     nodes: Array<{ name: string }>
     links: Array<{ source: number; target: number; value: number }>
   }
 }
-export interface EquipoRow { equipo: string; id: ConIC; revelacion_mediana_s: number }
+
+export interface EquipoRow {
+  equipo: string
+  id: ConIC
+  revelacion_mediana_s: number
+}
+
+interface EstimacionRival {
+  p?: number | null
+  ic90?: IC90 | null
+  n: number
+}
+
 export interface RivalData {
   equipo: string
-  filas: Array<{ muestra: string; juega_un_alto: { p: number; ic90: IC90; n: number } }>
-  formaciones: Array<{ formacion: string; exito: { p: number; ic90: IC90; n: number } }>
-  validacion_tarjeta?: { brier_mezcla?: number | null; brier_liga?: number | null; brier_equipo?: number | null } | null
+  filas: Array<{ muestra: string; juega_un_alto: EstimacionRival }>
+  formaciones: Array<{ formacion: string; exito: EstimacionRival }>
+  validacion_tarjeta?: {
+    brier_mezcla?: number | null
+    brier_liga?: number | null
+    brier_equipo?: number | null
+  } | null
   frases: string[]
+}
+
+export interface InformeData {
+  texto: string
+  fuente: 'ia' | 'plantilla'
 }
 
 export interface ReplayFrame {
