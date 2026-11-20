@@ -14,7 +14,7 @@ SISTEMA = (
     "Usa SOLO los números del bloque HECHOS y cita cada uno con su n. "
     "'Antes de la revelación' describe el momento del lanzamiento, no un error del QB. "
     "No inventes jugadores, jugadas ni números. "
-    "Termina con una recomendación concreta de preparación. "
+    "Termina con la recomendación permitida, si HECHOS la sostiene. "
     "La única recomendación permitida es: 'cuando esta defensa muestre un alto en el snap, "
     "prepara la lectura de rotación a dos altos', citando la probabilidad de rotación a dos altos "
     "con su n tal como aparece en HECHOS. No recomiendes lecturas rápidas ni nada que HECHOS no sostenga. "
@@ -87,18 +87,17 @@ def construir_hechos(
         for f in riv.get("filas", []):
             j = f["juega_un_alto"]
             t = _est(j["p"], j["ic90"][0], j["ic90"][1], j["n"])
-            filas_txt.append(f"formación {f['muestra']}: {t}")
-            lineas.append(f"Safety alto con formación {f['muestra']}: {t}")
+            filas_txt.append(f"muestra {f['muestra']} en el snap → juega un alto: {t}")
+            lineas.append(f"Muestra {f['muestra']} en el snap → juega un alto: {t}")
             if f.get("muestra") == "cerrado" and rec_txt is None:
-                lo, hi = 1 - j["ic90"][1], 1 - j["ic90"][0]
-                rec_txt = f"rota a dos altos en {_pct(1 - j['p'])} de las jugadas ({_ic(lo, hi, j['n'])})"
+                rec_txt = _est(1 - j["p"], 1 - j["ic90"][1], 1 - j["ic90"][0], j["n"])
                 if j["n"] < UMBRAL_N:
                     rec_txt += " (muestra chica)"
         frases = [str(x) for x in riv.get("frases", [])][:3]
         for k, fr in enumerate(frases, 1):
             lineas.append(f"Frase clave {k}: {fr}")
     if rec_txt:
-        lineas.append(f"Cuando muestra un alto en el snap, {rec_txt}")
+        lineas.append(f"Muestra cerrado en el snap → rota a dos altos: {rec_txt}")
 
     hechos = "\n".join(lineas)
 
@@ -110,13 +109,13 @@ def construir_hechos(
     if liga_txt:
         base += f" Referencia de la liga: {liga_txt}."
     if filas_txt:
-        base += " Uso de un safety alto: " + "; ".join(filas_txt) + "."
+        base += " Cobertura jugada según lo que muestra: " + "; ".join(filas_txt) + "."
     if frases:
         base += " " + " ".join(frases)
     if rec_txt:
         base += (
             " Recomendación: cuando esta defensa muestre un alto en el snap, prepara la lectura "
-            f"de rotación a dos altos ({rec_txt})."
+            f"de rotación a dos altos (rota a dos altos en {rec_txt})."
         )
     return hechos, base
 

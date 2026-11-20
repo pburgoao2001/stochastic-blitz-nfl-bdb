@@ -388,8 +388,9 @@ def preparar_jugadas() -> None:
     print(f"tiempo: {time.perf_counter() - t0:.1f} s")
 
 
-CLASES_REPLAY = ["a: disfrazada, lanzó antes de la revelación", "b: disfrazada, lanzó después de la revelación",
-                  "c: honesta"]
+CLASES_REPLAY = ["a: disfrazada (muestra cerrado), lanzó antes de la revelación",
+                 "b: disfrazada (muestra cerrado), lanzó después de la revelación", "c: honesta"]
+RANGOS_T_REPLAY = [(2.5, 4.0), (2.0, 4.5)]  # el segundo solo si una clase queda vacía con el primero
 SUFIJO_REPLAY = " · ejemplo ilustrativo elegido por regla"
 
 
@@ -429,39 +430,49 @@ def _cuadros_replay(fila: pd.Series, estructura: dict) -> list[dict] | None:
 def preparar_replays() -> None:
     """Etapa 4: data/derivado/replays.json con 3 jugadas elegidas por regla (docs/replays.md).
 
-    Clases: a) disfraz y lanzó antes de la revelación (ciega); b) disfraz y lanzó después de revelarse;
-    c) honesta (sin disfraz). En cada clase, la de mayor |p_snap - 0.5| con 2.5 <= t_pase <= 4.0 s y sin
-    cuadros faltantes; desempate por gameId y playId. La forma es la de REPLAYS en backend/mocks.py.
+    Clases: a) disfraz con muestra cerrado y lanzó antes de la revelación (ciega); b) disfraz con muestra
+    cerrado y lanzó después de revelarse; c) honesta (sin disfraz). En las tres se excluyen las jugadas con
+    castigo (foulName1). En cada clase, la de mayor |p_snap - 0.5| con 2.5 <= t_pase <= 4.0 s y sin cuadros
+    faltantes; si la clase queda vacía, 2.0 <= t_pase <= 4.5 s. Desempate por gameId y playId.
+    La forma es la de REPLAYS en backend/mocks.py.
     """
     j = pd.read_csv(DERIVADO / "jugadas.csv").merge(
         pd.read_csv(DERIVADO / "jugadas_base.csv", usecols=CLAVE + ["frame_snap", "frame_pase"]), on=CLAVE)
     descripciones = pd.read_csv(DATOS / "plays.csv", usecols=CLAVE + ["playDescription"]).set_index(CLAVE)
     cuadros = pd.read_pickle(DERIVADO / "estructura_cuadros.pkl")[CLAVE + ["frameId", "estructura"]]
-    en_rango = j["t_pase"].between(2.5, 4.0)
-    mascaras = [(j["disfraz"] == 1) & (j["ciega"] == 1), (j["disfraz"] == 1) & (j["evento_revela"] == 1),
-                j["disfraz"] == 0]
+    sin_castigo = j["foulName1"].isna()
+    cerrado = j["muestra"] == "cerrado"
+    mascaras = [(j["disfraz"] == 1) & (j["ciega"] == 1) & cerrado & sin_castigo,
+                (j["disfraz"] == 1) & (j["evento_revela"] == 1) & cerrado & sin_castigo,
+                (j["disfraz"] == 0) & sin_castigo]
     replays, elegidas = [], []
     for clase, m in zip(CLASES_REPLAY, mascaras):
-        cand = (j[m & en_rango].assign(margen=lambda d: (d["p_snap"] - 0.5).abs())
-                .sort_values(["margen", "gameId", "playId"], ascending=[False, True, True]))
-        for _, fila in cand.iterrows():
-            est = cuadros[(cuadros["gameId"] == fila["gameId"]) & (cuadros["playId"] == fila["playId"])]
-            frames = _cuadros_replay(fila, dict(zip(est["frameId"].astype(int), est["estructura"].astype(str))))
-            if frames is None:
-                continue
-            ciega = clase.startswith("a")
-            revela = None if ciega else float(fila["revela_t"])
-            texto = str(descripciones.loc[(int(fila["gameId"]), int(fila["playId"])), "playDescription"])[:140]
-            replays.append({"gameId": str(int(fila["gameId"])), "playId": str(int(fila["playId"])),
-                            "descripcion": texto + SUFIJO_REPLAY, "frames": frames,
-                            "eventos": {"snap": 0.0, "revela": revela, "lanza": float(fila["t_pase"])}})
-            elegidas.append({"clase": clase, "gameId": int(fila["gameId"]), "playId": int(fila["playId"]),
-                             "defensa": fila["defensiveTeam"], "ataque": fila["possessionTeam"],
-                             "p_snap": round(float(fila["p_snap"]), 4), "muestra": fila["muestra"],
-                             "juega": fila["juega"], "cobertura": fila["pff_passCoverage"],
-                             "t_pase": float(fila["t_pase"]), "revela": revela, "cuadros": len(frames),
-                             "candidatas": int(len(cand))})
-            break
+        hallada = None
+        for lo, hi in RANGOS_T_REPLAY:
+            cand = (j[m & j["t_pase"].between(lo, hi)].assign(margen=lambda d: (d["p_snap"] - 0.5).abs())
+                    .sort_values(["margen", "gameId", "playId"], ascending=[False, True, True]))
+            for _, fila in cand.iterrows():
+                est = cuadros[(cuadros["gameId"] == fila["gameId"]) & (cuadros["playId"] == fila["playId"])]
+                frames = _cuadros_replay(fila, dict(zip(est["frameId"].astype(int), est["estructura"].astype(str))))
+                if frames is not None:
+                    hallada = (fila, frames, cand, (lo, hi))
+                    break
+            if hallada is not None:
+                break
+        assert hallada is not None, f"clase vacía incluso con t_pase 2.0-4.5 s: {clase}"
+        fila, frames, cand, rango = hallada
+        revela = None if clase.startswith("a") else float(fila["revela_t"])
+        texto = str(descripciones.loc[(int(fila["gameId"]), int(fila["playId"])), "playDescription"])[:140]
+        replays.append({"gameId": str(int(fila["gameId"])), "playId": str(int(fila["playId"])),
+                        "descripcion": texto + SUFIJO_REPLAY, "frames": frames,
+                        "eventos": {"snap": 0.0, "revela": revela, "lanza": float(fila["t_pase"])}})
+        elegidas.append({"clase": clase, "gameId": int(fila["gameId"]), "playId": int(fila["playId"]),
+                         "defensa": fila["defensiveTeam"], "ataque": fila["possessionTeam"],
+                         "p_snap": round(float(fila["p_snap"]), 4), "muestra": fila["muestra"],
+                         "juega": fila["juega"], "cobertura": fila["pff_passCoverage"],
+                         "t_pase": float(fila["t_pase"]), "revela": revela, "cuadros": len(frames),
+                         "candidatas": int(len(cand)), "rango_t_pase": list(rango),
+                         "rango_ampliado": rango != RANGOS_T_REPLAY[0]})
     a, b = replays[0]["eventos"], replays[1]["eventos"]
     assert a["revela"] is None or a["revela"] > a["lanza"], "clase a: revela debe ser null o > lanza"
     assert b["revela"] is not None and b["revela"] < b["lanza"], "clase b: revela debe ser < lanza"
