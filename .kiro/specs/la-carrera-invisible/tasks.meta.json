@@ -1,0 +1,19 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Add mock data module and wire all API endpoints": [
+      {
+        "executionId": "ebe3a72e-4fa9-4088-8554-28a370078af1",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795192908680
+      }
+    ],
+    "2. Build the single-page dashboard consuming the API": [
+      {
+        "executionId": "ebe3a72e-4fa9-4088-8554-28a370078af1",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193136776
+      }
+    ]
+  }
+}

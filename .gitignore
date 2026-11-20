@@ -24,3 +24,6 @@ data/derivado/*
 
 # Objetos serializados
 *.pkl
+
+# Temporales de verificación de Kiro
+_verif_*

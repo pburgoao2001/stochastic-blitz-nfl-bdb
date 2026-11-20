@@ -2,6 +2,7 @@ gameId,playId,passResult,motivo
 2021090900,2279,S,sin evento de pase
 2021090900,2298,R,sin evento de pase
 2021090900,2330,R,sin evento de pase
+2021090900,3364,R,sack o scramble con evento de pase
 2021091200,843,R,sin evento de pase
 2021091200,2063,R,sin evento de pase
 2021091200,2145,R,sin evento de pase
@@ -15,6 +16,7 @@ gameId,playId,passResult,motivo
 2021091201,345,R,sin evento de pase
 2021091201,691,S,sin evento de pase
 2021091201,1393,S,sin evento de pase
+2021091201,1446,S,sack o scramble con evento de pase
 2021091201,2983,R,sin evento de pase
 2021091201,3346,S,sin evento de pase
 2021091201,3756,R,sin evento de pase
@@ -56,8 +58,10 @@ gameId,playId,passResult,motivo
 2021091206,2210,S,sin evento de pase
 2021091206,2253,S,sin evento de pase
 2021091206,2347,S,sin evento de pase
+2021091206,3060,S,sack o scramble con evento de pase
 2021091206,3311,R,sin evento de pase
 2021091206,3761,R,sin evento de pase
+2021091207,494,S,sack o scramble con evento de pase
 2021091207,1053,S,sin evento de pase
 2021091207,1090,S,sin evento de pase
 2021091207,1650,R,sin evento de pase
@@ -68,16 +72,22 @@ gameId,playId,passResult,motivo
 2021091207,3527,S,sin evento de pase
 2021091207,3828,S,sin evento de pase
 2021091208,649,R,sin evento de pase
+2021091208,996,S,sack o scramble con evento de pase
+2021091208,2010,S,sack o scramble con evento de pase
 2021091208,2219,R,sin evento de pase
 2021091208,2322,R,sin evento de pase
+2021091208,2849,S,sack o scramble con evento de pase
 2021091208,3874,R,sin evento de pase
+2021091209,177,R,sack o scramble con evento de pase
 2021091209,1295,R,sin evento de pase
+2021091209,1508,R,sack o scramble con evento de pase
 2021091209,1971,S,sin evento de pase
 2021091209,2293,R,sin evento de pase
 2021091209,2364,R,sin evento de pase
 2021091209,2735,S,sin evento de pase
 2021091209,3149,S,sin evento de pase
 2021091209,3639,S,sin evento de pase
+2021091210,146,S,sack o scramble con evento de pase
 2021091210,726,S,sin evento de pase
 2021091210,1657,S,sin evento de pase
 2021091210,2011,S,sin evento de pase
@@ -90,11 +100,13 @@ gameId,playId,passResult,motivo
 2021091212,1239,R,sin evento de pase
 2021091212,1989,S,sin evento de pase
 2021091212,2474,R,sin evento de pase
+2021091212,2630,R,sack o scramble con evento de pase
 2021091212,2703,S,sin evento de pase
 2021091212,2804,R,sin evento de pase
 2021091212,2857,R,sin evento de pase
 2021091212,2905,R,sin evento de pase
 2021091212,3410,S,sin evento de pase
+2021091213,804,S,sack o scramble con evento de pase
 2021091213,1330,S,sin evento de pase
 2021091213,1616,R,sin evento de pase
 2021091213,2757,R,sin evento de pase
@@ -117,6 +129,7 @@ gameId,playId,passResult,motivo
 2021091600,111,S,sin evento de pase
 2021091600,235,R,sin evento de pase
 2021091600,261,S,sin evento de pase
+2021091600,727,S,sack o scramble con evento de pase
 2021091600,1160,S,sin evento de pase
 2021091600,1991,R,sin evento de pase
 2021091600,3001,R,sin evento de pase
@@ -148,6 +161,7 @@ gameId,playId,passResult,motivo
 2021091902,164,S,sin evento de pase
 2021091902,985,S,sin evento de pase
 2021091902,1029,R,sin evento de pase
+2021091902,1263,R,sack o scramble con evento de pase
 2021091902,1619,R,sin evento de pase
 2021091902,2492,R,sin evento de pase
 2021091902,3163,R,sin evento de pase
@@ -197,6 +211,7 @@ gameId,playId,passResult,motivo
 2021091907,843,R,sin evento de pase
 2021091907,1836,R,sin evento de snap
 2021091907,1857,C,sin evento de snap
+2021091907,2086,S,sack o scramble con evento de pase
 2021091907,2273,R,sin evento de pase
 2021091907,2459,R,sin evento de pase
 2021091907,2890,R,sin evento de pase
@@ -212,10 +227,12 @@ gameId,playId,passResult,motivo
 2021091909,569,R,sin evento de pase
 2021091909,802,R,sin evento de pase
 2021091909,1175,R,sin evento de pase
+2021091909,1441,S,sack o scramble con evento de pase
 2021091909,3273,R,sin evento de pase
 2021091909,3299,S,sin evento de pase
 2021091909,3565,C,sin evento de snap
 2021091909,3934,S,sin evento de pase
+2021091910,508,S,sack o scramble con evento de pase
 2021091910,848,R,sin evento de pase
 2021091910,1695,S,sin evento de pase
 2021091910,2359,R,sin evento de pase
@@ -232,10 +249,12 @@ gameId,playId,passResult,motivo
 2021091912,1025,S,sin evento de pase
 2021091912,1171,R,sin evento de pase
 2021091912,1218,S,sin evento de pase
+2021091912,1411,S,sack o scramble con evento de pase
 2021091912,1868,C,sin evento de snap
 2021091912,3422,R,sin evento de pase
 2021091912,3497,S,sin evento de pase
 2021091912,4213,R,sin evento de pase
+2021091912,4574,S,sack o scramble con evento de pase
 2021091913,2561,R,sin evento de pase
 2021091913,2775,S,sin evento de pase
 2021091913,2960,R,sin evento de pase
@@ -248,12 +267,14 @@ gameId,playId,passResult,motivo
 2021092000,3294,S,sin evento de pase
 2021092000,3365,R,sin evento de pase
 2021092300,620,S,sin evento de pase
+2021092300,1359,S,sack o scramble con evento de pase
 2021092300,1511,S,sin evento de pase
 2021092300,1945,S,sin evento de pase
 2021092300,2422,R,sin evento de pase
 2021092300,2643,S,sin evento de pase
 2021092300,2713,R,sin evento de pase
 2021092300,3189,S,sin evento de pase
+2021092600,149,R,sack o scramble con evento de pase
 2021092600,1440,R,sin evento de pase
 2021092600,1636,R,sin evento de pase
 2021092600,3245,S,sin evento de pase
@@ -298,6 +319,7 @@ gameId,playId,passResult,motivo
 2021092603,1302,R,sin evento de pase
 2021092603,1875,R,sin evento de pase
 2021092603,2262,R,sin evento de pase
+2021092603,3104,R,sack o scramble con evento de pase
 2021092603,3481,S,sin evento de pase
 2021092603,4186,S,sin evento de pase
 2021092604,232,R,sin evento de pase
@@ -325,6 +347,7 @@ gameId,playId,passResult,motivo
 2021092606,414,R,sin evento de pase
 2021092606,462,S,sin evento de pase
 2021092606,481,R,sin evento de pase
+2021092606,2161,S,sack o scramble con evento de pase
 2021092606,2423,R,sin evento de pase
 2021092606,2469,S,sin evento de pase
 2021092606,2946,R,sin evento de pase
@@ -379,11 +402,13 @@ gameId,playId,passResult,motivo
 2021092613,3182,S,sin evento de pase
 2021092613,3201,S,sin evento de pase
 2021092613,3741,S,sin evento de pase
+2021092700,356,S,sack o scramble con evento de pase
 2021092700,1628,R,sin evento de pase
 2021092700,1913,S,sin evento de pase
 2021092700,2266,R,sin evento de pase
 2021092700,2358,S,sin evento de pase
 2021092700,2469,R,sin evento de pase
+2021092700,2565,R,sack o scramble con evento de pase
 2021092700,2644,R,sin evento de pase
 2021092700,2833,S,sin evento de pase
 2021092700,3193,R,sin evento de pase
@@ -442,6 +467,7 @@ gameId,playId,passResult,motivo
 2021100304,1839,S,sin evento de pase
 2021100304,2703,S,sin evento de pase
 2021100304,3248,S,sin evento de pase
+2021100305,317,R,sack o scramble con evento de pase
 2021100305,779,S,sin evento de pase
 2021100305,2252,S,sin evento de pase
 2021100305,2349,S,sin evento de pase
@@ -477,6 +503,8 @@ gameId,playId,passResult,motivo
 2021100308,3901,S,sin evento de pase
 2021100308,4268,R,sin evento de pase
 2021100308,4330,I,sin evento de snap
+2021100308,4419,R,sack o scramble con evento de pase
+2021100309,362,S,sack o scramble con evento de pase
 2021100309,1376,R,sin evento de pase
 2021100309,2140,R,sin evento de pase
 2021100309,2404,S,sin evento de pase
@@ -531,6 +559,7 @@ gameId,playId,passResult,motivo
 2021100400,4118,R,sin evento de pase
 2021100700,780,S,sin evento de pase
 2021100700,920,R,sin evento de pase
+2021100700,2051,S,sack o scramble con evento de pase
 2021100700,2641,S,sin evento de pase
 2021100700,2963,C,sin evento de snap
 2021100700,3008,R,sin evento de pase
@@ -559,6 +588,7 @@ gameId,playId,passResult,motivo
 2021101003,3261,S,sin evento de pase
 2021101003,3397,S,sin evento de pase
 2021101004,609,R,sin evento de pase
+2021101004,1754,S,sack o scramble con evento de pase
 2021101004,1881,S,sin evento de pase
 2021101004,2493,S,sin evento de pase
 2021101004,2615,R,sin evento de pase
@@ -659,6 +689,7 @@ gameId,playId,passResult,motivo
 2021101700,2745,R,sin evento de pase
 2021101700,2810,R,sin evento de pase
 2021101700,3080,R,sin evento de pase
+2021101700,3151,S,sack o scramble con evento de pase
 2021101701,515,R,sin evento de pase
 2021101701,669,S,sin evento de pase
 2021101701,888,R,sin evento de pase
@@ -674,12 +705,14 @@ gameId,playId,passResult,motivo
 2021101702,2774,S,sin evento de pase
 2021101702,3881,R,sin evento de pase
 2021101702,3924,S,sin evento de pase
+2021101702,3976,S,sack o scramble con evento de pase
 2021101702,4089,R,sin evento de pase
 2021101702,4547,R,sin evento de pase
 2021101702,4775,R,sin evento de pase
 2021101703,96,R,sin evento de pase
 2021101703,240,S,sin evento de pase
 2021101703,608,S,sin evento de pase
+2021101703,841,R,sack o scramble con evento de pase
 2021101703,1437,S,sin evento de pase
 2021101703,1779,R,sin evento de pase
 2021101703,2060,S,sin evento de pase
@@ -705,6 +738,7 @@ gameId,playId,passResult,motivo
 2021101705,2173,R,sin evento de pase
 2021101705,2194,S,sin evento de pase
 2021101705,2739,R,sin evento de pase
+2021101706,73,S,sack o scramble con evento de pase
 2021101706,629,S,sin evento de pase
 2021101706,782,R,sin evento de pase
 2021101706,982,S,sin evento de pase
@@ -727,6 +761,7 @@ gameId,playId,passResult,motivo
 2021101708,2500,S,sin evento de pase
 2021101708,2615,S,sin evento de pase
 2021101708,2655,S,sin evento de pase
+2021101708,2939,S,sack o scramble con evento de pase
 2021101708,3379,R,sin evento de pase
 2021101709,349,S,sin evento de pase
 2021101709,1020,S,sin evento de pase
@@ -743,6 +778,7 @@ gameId,playId,passResult,motivo
 2021101711,1894,S,sin evento de pase
 2021101711,3096,S,sin evento de pase
 2021101711,4396,S,sin evento de pase
+2021101711,4533,S,sack o scramble con evento de pase
 2021101800,304,R,sin evento de pase
 2021101800,351,R,sin evento de pase
 2021101800,742,S,sin evento de pase
@@ -752,6 +788,7 @@ gameId,playId,passResult,motivo
 2021101800,3998,R,sin evento de pase
 2021102100,655,R,sin evento de pase
 2021102100,1514,S,sin evento de pase
+2021102100,2612,R,sack o scramble con evento de pase
 2021102100,2798,S,sin evento de pase
 2021102100,3561,S,sin evento de pase
 2021102400,321,R,sin evento de pase
@@ -817,6 +854,7 @@ gameId,playId,passResult,motivo
 2021102405,4101,I,sin evento de snap
 2021102406,896,R,sin evento de pase
 2021102406,2434,S,sin evento de pase
+2021102406,2537,S,sack o scramble con evento de pase
 2021102406,2609,S,sin evento de pase
 2021102407,385,R,sin evento de pase
 2021102407,641,R,sin evento de pase
@@ -847,6 +885,7 @@ gameId,playId,passResult,motivo
 2021102409,3766,R,sin evento de pase
 2021102409,3863,R,sin evento de pase
 2021102409,3930,R,sin evento de pase
+2021102410,969,S,sack o scramble con evento de pase
 2021102410,2532,S,sin evento de pase
 2021102410,3600,R,sin evento de pase
 2021102410,3833,C,sin evento de snap
@@ -898,6 +937,7 @@ gameId,playId,passResult,motivo
 2021103103,305,S,sin evento de pase
 2021103103,765,S,sin evento de pase
 2021103103,1080,S,sin evento de pase
+2021103103,1437,S,sack o scramble con evento de pase
 2021103103,1802,S,sin evento de pase
 2021103103,1984,S,sin evento de pase
 2021103103,3594,R,sin evento de pase
@@ -910,6 +950,7 @@ gameId,playId,passResult,motivo
 2021103104,2055,R,sin evento de pase
 2021103104,2855,S,sin evento de pase
 2021103104,3699,R,sin evento de pase
+2021103104,3737,S,sack o scramble con evento de pase
 2021103105,1547,S,sin evento de pase
 2021103105,2120,S,sin evento de pase
 2021103105,2333,S,sin evento de pase
@@ -964,6 +1005,7 @@ gameId,playId,passResult,motivo
 2021103112,1931,R,sin evento de pase
 2021103112,2270,S,sin evento de pase
 2021103112,2374,S,sin evento de pase
+2021103112,3325,S,sack o scramble con evento de pase
 2021110100,265,R,sin evento de pase
 2021110100,847,R,sin evento de pase
 2021110100,2226,R,sin evento de pase

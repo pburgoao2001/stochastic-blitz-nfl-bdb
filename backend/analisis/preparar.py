@@ -5,7 +5,9 @@ Lee cada archivo de data/ una sola vez y escribe en data/derivado/:
                             ofensiva atacando hacia +x. Columnas: gameId, playId, nflId
                             (NA en el balón), frameId, t, x, y, profundidad, y_balon_snap.
   jugadas_base.csv          Una fila por jugada de plays.csv con su contexto, n_rushers,
-                            frame_snap, frame_pase y t_pase.
+                            frame_snap, frame_pase, t_pase, dist_endzone (110 - x normalizada
+                            del balón en el snap) y flag_linea (|absoluteYardlineNumber - x cruda
+                            del balón en el snap| > 2 yd; absoluteYardlineNumber está en x cruda).
   exclusiones_preparar.csv  Jugadas que no entran a frames_def y su motivo.
   preparar_resumen.json     Conteos y verificaciones de convenciones de la corrida.
 
@@ -19,6 +21,8 @@ Convenciones (cada corrida las verifica con los datos y las reporta):
   - Si playDirection == "left": x = 120 - x, y = 53.3 - y (la ofensiva ataca hacia +x).
   - Defensores: team == defensiveTeam de plays.csv. Balón: team == "football".
   - profundidad = x - x del balón en el cuadro del snap.
+  - El análisis usa solo pases (passResult C, I, IN): sacks y scrambles con evento de
+    pase quedan fuera y se reportan en exclusiones_preparar.csv.
 No hay pasos aleatorios: dos corridas dan exactamente las mismas salidas.
 """
 from __future__ import annotations
@@ -40,13 +44,17 @@ ANCHO = 53.3
 SNAP = ["ball_snap", "autoevent_ballsnap"]
 PASE = ["pass_forward", "autoevent_passforward"]
 ROLES_DEFENSA_PFF = ["Coverage", "Pass Rush"]
+PASES_ANALISIS = ["C", "I", "IN"]
+LINEA_GOL = 110.0
+TOLERANCIA_LINEA = 2.0
 CLAVE = ["gameId", "playId"]
 COLS_TRACKING = ["gameId", "playId", "nflId", "frameId", "time", "team",
                  "playDirection", "x", "y", "s", "event"]
 COLS_BASE = ["gameId", "playId", "week", "quarter", "defensiveTeam", "possessionTeam", "down",
              "yardsToGo", "absoluteYardlineNumber", "offenseFormation", "pff_playAction",
              "dropBackType", "passResult", "prePenaltyPlayResult", "foulName1",
-             "pff_passCoverage", "n_rushers", "frame_snap", "frame_pase", "t_pase"]
+             "pff_passCoverage", "n_rushers", "frame_snap", "frame_pase", "t_pase",
+             "dist_endzone", "flag_linea"]
 COLS_FRAMES = ["gameId", "playId", "nflId", "frameId", "t", "x", "y", "profundidad", "y_balon_snap"]
 
 
@@ -159,12 +167,15 @@ def main() -> None:
         ("sin tracking", base["frame_min"].isna()),
         ("sin evento de snap", base["frame_snap"].isna()),
         ("sin evento de pase", base["frame_pase"].isna()),
+        ("sack o scramble con evento de pase", ~base["passResult"].isin(PASES_ANALISIS)),
         ("pase no posterior al snap", ~(base["frame_pase"] > base["frame_snap"])),
         ("sin balon en el snap", base["x_balon_snap"].isna()),
         ("sin defensores en el snap", ~(base["n_def_snap"] > 0)),
     ]
     base["motivo"] = np.select([c.to_numpy() for _, c in reglas], [m for m, _ in reglas], default="")
     base["t_pase"] = (base["frame_pase"] - base["frame_snap"]) / HZ
+    base["dist_endzone"] = LINEA_GOL - base["x_balon_snap"]
+    base["flag_linea"] = (base["absoluteYardlineNumber"] - base["x_crudo_balon_snap"]).abs() > TOLERANCIA_LINEA
     rushers = pff[pff["pff_role"].eq("Pass Rush")].groupby(CLAVE).size().rename("n_rushers")
     base = base.join(rushers, on=CLAVE)
     base["n_rushers"] = base["n_rushers"].fillna(0).astype(int)
@@ -255,7 +266,8 @@ def main() -> None:
     t_total = time.perf_counter() - t0
     print(f"tracking: {len(archivos)} archivos, {resumen['entradas']['filas_tracking']:,} filas leidas una vez")
     print(f"frames_def.pkl: {len(frames):,} filas, {len(ok):,} jugadas")
-    print(f"jugadas_base.csv: {len(salida):,} filas | descartadas de frames_def: {len(excl):,}")
+    print(f"jugadas_base.csv: {len(salida):,} filas | descartadas de frames_def: {len(excl):,} | "
+          f"flag_linea en jugadas del analisis: {int(ok['flag_linea'].sum())}")
     for m, d in exclusiones.items():
         print(f"  - {m}: {d['n']} {d['passResult']}")
     print(json.dumps(ver, ensure_ascii=False))

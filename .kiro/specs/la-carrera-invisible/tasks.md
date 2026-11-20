@@ -18,15 +18,15 @@ Five sequential tasks follow the implementation order from the spec description.
 
 ## Tasks
 
-- [ ] 1. Add mock data module and wire all API endpoints
+- [x] 1. Add mock data module and wire all API endpoints
 
   Create `backend/mocks.py` with hardcoded Python dicts/lists that satisfy every field of the full API contract. Update `backend/main.py` to import the mocks, detect whether `backend/analisis/metricas.py` exists, set a module-level `DATA_SOURCE` variable, and expose all six endpoints (`/health`, `/api/resumen`, `/api/equipos`, `/api/rival`, `/api/replays`, `POST /api/informe` with template fallback). Every endpoint that reads from mocks adds the response header `X-Data-Source: mock`.
 
-  - [ ] 1.1 Create `backend/mocks.py` with `RESUMEN`, `EQUIPOS` (32 teams sorted by `id.valor` desc), `REPLAYS` (2 plays × 20 frames), and `RIVAL_TABLE` covering at least three teams × three distance buckets.
-  - [ ] 1.2 Update `backend/main.py`: add startup import logic (try `metricas`, fall back to mocks, log to stderr on failure); add `GET /api/resumen`, `GET /api/equipos`, `GET /api/rival`, `GET /api/replays`, `POST /api/informe` (template only for now); retain `GET /health` unchanged; attach `X-Data-Source: mock` header where applicable.
-  - [ ] 1.3 Verify manually: start Uvicorn (`.venv/Scripts/uvicorn backend.main:app --reload`), hit each endpoint with curl or a browser, confirm shapes and header.
+  - [x] 1.1 Create `backend/mocks.py` with `RESUMEN`, `EQUIPOS` (32 teams sorted by `id.valor` desc), `REPLAYS` (2 plays × 20 frames), and `RIVAL_TABLE` covering at least three teams × three distance buckets.
+  - [x] 1.2 Update `backend/main.py`: add startup import logic (try `metricas`, fall back to mocks, log to stderr on failure); add `GET /api/resumen`, `GET /api/equipos`, `GET /api/rival`, `GET /api/replays`, `POST /api/informe` (template only for now); retain `GET /health` unchanged; attach `X-Data-Source: mock` header where applicable.
+  - [x] 1.3 Verify manually: start Uvicorn (`.venv/Scripts/uvicorn backend.main:app --reload`), hit each endpoint with curl or a browser, confirm shapes and header.
 
-- [ ] 2. Build the single-page dashboard consuming the API
+- [-] 2. Build the single-page dashboard consuming the API
 
   Replace the placeholder `App.tsx` with a full single-page layout that renders all six sections. Add the Vite proxy. Each section reads from the API responses and renders with Recharts where specified.
 
