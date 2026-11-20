@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { segundos } from '../formato'
+import { AZUL, NARANJA, SLATE } from '../paleta'
 import type { ReplayData } from '../types'
 
 const CAMPO_X_MIN = -10
@@ -6,6 +8,7 @@ const CAMPO_X_MAX = 25
 const CAMPO_ANCHO = CAMPO_X_MAX - CAMPO_X_MIN
 const CAMPO_Y_MAX = 53.3
 const LINEAS_REFERENCIA = [-10, -5, 0, 5, 10, 15, 20, 25]
+const CLASE_TARJETA = 'rounded-2xl bg-white p-6 shadow-sm sm:p-8'
 
 interface MarcaEventoProps {
   etiqueta: string
@@ -32,15 +35,33 @@ function MarcaEvento({ etiqueta, tiempo, porcentaje, color, posicion }: MarcaEve
         style={{ backgroundColor: color }}
       />
       <span
-        className={`absolute left-0 whitespace-nowrap rounded bg-white/95 px-1.5 py-0.5 text-xs font-semibold text-gray-700 shadow-sm ${
+        className={`absolute left-0 whitespace-nowrap rounded bg-white/95 px-1.5 py-0.5 text-xs font-semibold text-slate-700 shadow-sm ${
           posicion === 'arriba' ? 'bottom-full mb-1' : 'top-full mt-1'
         }`}
         style={{ transform: desplazamientoEtiqueta(porcentaje) }}
       >
-        {etiqueta} · {tiempo.toFixed(1)} s
+        {etiqueta} · {segundos(tiempo)}
       </span>
     </div>
   )
+}
+
+function EncabezadoRepeticion() {
+  return (
+    <>
+      <h2 id="titulo-repeticion" className="text-xl font-semibold text-slate-900">
+        4. Repetición
+      </h2>
+      <p className="mt-1 text-slate-500">Ejemplos reales elegidos por regla, no a mano.</p>
+    </>
+  )
+}
+
+function claseLectura(estructura: string): string {
+  const valor = estructura.trim().toLocaleLowerCase('es-MX')
+  if (valor === 'cerrado') return 'bg-blue-100 text-blue-800'
+  if (valor === 'abierto') return 'bg-orange-100 text-orange-800'
+  return 'bg-slate-200 text-slate-700'
 }
 
 export default function Repeticion() {
@@ -129,9 +150,9 @@ export default function Repeticion() {
 
   if (replays === null) {
     return (
-      <section className="rounded-lg bg-white p-5 shadow">
-        <h2 className="text-xl font-bold">Repetición</h2>
-        <div className="mt-2 rounded border border-dashed border-green-700 bg-green-800/10 py-10 text-center text-gray-600">
+      <section className={CLASE_TARJETA} aria-labelledby="titulo-repeticion">
+        <EncabezadoRepeticion />
+        <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 py-10 text-center text-slate-500">
           Cargando repetición…
         </div>
       </section>
@@ -140,9 +161,9 @@ export default function Repeticion() {
 
   if (replays.length === 0 || !jugada || jugada.frames.length === 0) {
     return (
-      <section className="rounded-lg bg-white p-5 shadow">
-        <h2 className="text-xl font-bold">Repetición</h2>
-        <div className="mt-2 rounded border border-dashed border-green-700 bg-green-800/10 py-10 text-center text-gray-600">
+      <section className={CLASE_TARJETA} aria-labelledby="titulo-repeticion">
+        <EncabezadoRepeticion />
+        <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 py-10 text-center text-slate-500">
           Repetición disponible próximamente
         </div>
       </section>
@@ -165,17 +186,17 @@ export default function Repeticion() {
   const lanzoAntesDeRevelar = revelar === null || jugada.eventos.lanza < revelar
 
   return (
-    <section className="rounded-lg bg-white p-5 shadow">
-      <h2 className="text-xl font-bold">Repetición</h2>
+    <section className={CLASE_TARJETA} aria-labelledby="titulo-repeticion">
+      <EncabezadoRepeticion />
 
-      <label htmlFor="selector-replay" className="mt-4 block text-sm font-semibold text-gray-700">
+      <label htmlFor="selector-replay" className="mt-5 block text-sm font-semibold text-slate-700">
         Jugada
       </label>
       <select
         id="selector-replay"
         value={indiceJugada}
         onChange={(evento) => seleccionarJugada(Number(evento.target.value))}
-        className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800"
+        className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm"
       >
         {replays.map((replay, indice) => (
           <option key={`${replay.gameId}-${replay.playId}`} value={indice}>
@@ -184,22 +205,28 @@ export default function Repeticion() {
         ))}
       </select>
 
-      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-700" aria-label="Leyenda">
+      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-700" aria-label="Leyenda">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-3.5 w-3.5 rounded-full border border-sky-900 bg-sky-400" />
+          <span
+            className="h-3.5 w-3.5 rounded-full border"
+            style={{ backgroundColor: AZUL, borderColor: AZUL }}
+          />
           Defensa
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-3.5 w-3.5 border border-red-950 bg-red-500" />
+          <span
+            className="h-3.5 w-3.5 border"
+            style={{ backgroundColor: NARANJA, borderColor: NARANJA }}
+          />
           Ofensiva
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-amber-700" />
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: SLATE }} />
           Balón
         </span>
       </div>
 
-      <div className="mx-auto mt-3 max-w-md overflow-hidden rounded-lg border-4 border-green-950 bg-green-800">
+      <div className="mx-auto mt-3 max-w-md overflow-hidden rounded-xl border-4 border-emerald-950 bg-emerald-800">
         <svg
           viewBox={`${CAMPO_X_MIN} 0 ${CAMPO_ANCHO} ${CAMPO_Y_MAX}`}
           className="block h-auto w-full"
@@ -253,8 +280,8 @@ export default function Repeticion() {
               cx={x - origenX}
               cy={y}
               r={0.78}
-              fill="#38bdf8"
-              stroke="#0c4a6e"
+              fill={AZUL}
+              stroke={AZUL}
               strokeWidth={0.18}
             />
           ))}
@@ -266,8 +293,8 @@ export default function Repeticion() {
               width={1.5}
               height={1.5}
               rx={0.08}
-              fill="#ef4444"
-              stroke="#450a0a"
+              fill={NARANJA}
+              stroke={NARANJA}
               strokeWidth={0.18}
             />
           ))}
@@ -275,8 +302,8 @@ export default function Repeticion() {
             cx={frame.balon[0] - origenX}
             cy={frame.balon[1]}
             r={0.42}
-            fill="#b45309"
-            stroke="#fef3c7"
+            fill={SLATE}
+            stroke="#f8fafc"
             strokeWidth={0.14}
           />
         </svg>
@@ -287,7 +314,7 @@ export default function Repeticion() {
           type="button"
           onClick={reproducir}
           disabled={reproduciendo}
-          className="rounded bg-green-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Play
         </button>
@@ -295,23 +322,23 @@ export default function Repeticion() {
           type="button"
           onClick={pausar}
           disabled={!reproduciendo}
-          className="rounded bg-gray-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Pausa
         </button>
         <button
           type="button"
           onClick={reiniciar}
-          className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700"
+          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
         >
           Reset
         </button>
-        <span className="ml-auto text-sm font-semibold tabular-nums text-gray-700">
-          Tiempo: {frame.t.toFixed(1)} s
+        <span className="ml-auto text-sm font-semibold tabular-nums text-slate-700">
+          Tiempo: {segundos(frame.t)}
         </span>
       </div>
 
-      <label htmlFor="control-frame" className="mt-4 block text-sm font-medium text-gray-700">
+      <label htmlFor="control-frame" className="mt-4 block text-sm font-medium text-slate-700">
         Cuadro {indiceFrame + 1} de {jugada.frames.length}
       </label>
       <input
@@ -322,26 +349,29 @@ export default function Repeticion() {
         step={1}
         value={indiceFrame}
         onChange={(evento) => moverAFrame(Number(evento.target.value))}
-        className="mt-1 w-full accent-green-700"
+        className="mt-1 w-full accent-blue-600"
       />
 
-      <p className="mt-3 rounded bg-slate-100 px-3 py-2 text-sm text-slate-800">
-        Lectura del modelo: <strong>{frame.estructura}</strong>
-      </p>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
+        <span>Lectura del modelo</span>
+        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${claseLectura(frame.estructura)}`}>
+          {frame.estructura}
+        </span>
+      </div>
 
       <div className="mt-5" aria-label="Línea de tiempo de eventos">
-        <h3 className="text-sm font-semibold text-gray-800">Línea de tiempo</h3>
+        <h3 className="text-sm font-semibold text-slate-800">Línea de tiempo</h3>
         <div className="relative mt-2 h-24">
-          <div className="absolute left-0 right-0 top-12 h-1 rounded-full bg-gray-200" />
+          <div className="absolute left-0 right-0 top-12 h-1 rounded-full bg-slate-200" />
           <div
-            className="absolute left-0 top-12 h-1 rounded-full bg-green-400"
+            className="absolute left-0 top-12 h-1 rounded-full bg-blue-600/60"
             style={{ width: `${porcentajeEvento(frame.t)}%` }}
           />
           <MarcaEvento
             etiqueta="Snap"
             tiempo={jugada.eventos.snap}
             porcentaje={porcentajeEvento(jugada.eventos.snap)}
-            color="#2563eb"
+            color={SLATE}
             posicion="arriba"
           />
           {revelar !== null && (
@@ -349,7 +379,7 @@ export default function Repeticion() {
               etiqueta="Revelación"
               tiempo={revelar}
               porcentaje={porcentajeEvento(revelar)}
-              color="#9333ea"
+              color={AZUL}
               posicion="abajo"
             />
           )}
@@ -357,19 +387,19 @@ export default function Repeticion() {
             etiqueta="Lanzamiento"
             tiempo={jugada.eventos.lanza}
             porcentaje={porcentajeEvento(jugada.eventos.lanza)}
-            color="#dc2626"
+            color={NARANJA}
             posicion="arriba"
           />
         </div>
         {revelar === null && (
-          <p className="text-sm text-purple-800">
+          <p className="text-sm text-slate-600">
             <strong>Revelación:</strong> no se reveló antes del pase
           </p>
         )}
       </div>
 
       {lanzoAntesDeRevelar && (
-        <p className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+        <p className="mt-3 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-sm font-semibold text-orange-900">
           El QB lanzó antes de que se revelara la cobertura
         </p>
       )}

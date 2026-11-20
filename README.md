@@ -1,6 +1,6 @@
 # La Carrera Invisible
 
-Construí La Carrera Invisible: un lector de coberturas entrenado con el tracking del Big Data Bowl (temporada 2021, semanas 1–6) que, cuadro por cuadro, detecta si la defensa muestra uno o dos safeties profundos y mide en qué momento revela la cobertura que realmente juega.
+Construí La Carrera Invisible: un lector de coberturas, entrenado con las semanas 1–6 del tracking del Big Data Bowl 2021 y aplicado a las 8 semanas, que cuadro por cuadro detecta si la defensa muestra uno o dos safeties profundos y mide en qué momento revela la cobertura que realmente juega.
 
 Revela que la carrera es un volado: cuando la defensa disfraza, el QB lanza antes de que se revele la cobertura en el 49.7% de las jugadas (IC90 47.3–52.3); el disfraz casi siempre consiste en mostrar un safety profundo y jugar con dos (59% de las coberturas de dos altos decididas en el snap), y lanzar antes de la revelación no se asocia con una diferencia clara de éxito (−1.9 pp, IC90 −6.6 a +2.3, n = 1,168).
 

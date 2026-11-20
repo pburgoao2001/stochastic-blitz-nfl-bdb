@@ -26,7 +26,7 @@ Five sequential tasks follow the implementation order from the spec description.
   - [x] 1.2 Update `backend/main.py`: add startup import logic (try `metricas`, fall back to mocks, log to stderr on failure); add `GET /api/resumen`, `GET /api/equipos`, `GET /api/rival`, `GET /api/replays`, `POST /api/informe` (template only for now); retain `GET /health` unchanged; attach `X-Data-Source: mock` header where applicable.
   - [x] 1.3 Verify manually: start Uvicorn (`.venv/Scripts/uvicorn backend.main:app --reload`), hit each endpoint with curl or a browser, confirm shapes and header.
 
-- [-] 2. Build the single-page dashboard consuming the API
+- [x] 2. Build the single-page dashboard consuming the API
 
   Replace the placeholder `App.tsx` with a full single-page layout that renders all six sections. Add the Vite proxy. Each section reads from the API responses and renders with Recharts where specified.
 

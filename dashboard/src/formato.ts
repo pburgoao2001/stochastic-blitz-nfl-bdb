@@ -12,26 +12,26 @@ const esNumero = (x: number | null | undefined): x is number =>
 const esIntervalo = (ic: IC90 | null | undefined): ic is IC90 =>
   Array.isArray(ic) && ic.length === 2 && esNumero(ic[0]) && esNumero(ic[1])
 
-/** 1234 -> "1,234" */
+/** Formatea enteros con separadores de miles. */
 export const enteroLegible = (x: number | null | undefined): string =>
   esNumero(x) ? FORMATO_ENTERO.format(x) : NA
 
-/** 0.534 -> "53%" */
+/** Formatea una proporción como porcentaje sin decimales. */
 export const porcentaje = (x: number | null | undefined): string =>
   esNumero(x) ? `${(x * 100).toFixed(0)}%` : NA
 
-/** 1 decimal con signo (menos tipográfico): "−1.9", "+2.3" */
+/** Formatea un valor con un decimal, signo y menos tipográfico. */
 export const conSigno = (x: number | null | undefined): string => {
   if (!esNumero(x)) return NA
   const texto = Math.abs(x).toFixed(1)
   return x < 0 && Number(texto) !== 0 ? `${MENOS}${texto}` : `+${texto}`
 }
 
-/** "−1.9 pp", "+2.3 pp" */
+/** Formatea puntos porcentuales con un decimal y signo. */
 export const pp = (x: number | null | undefined): string =>
   esNumero(x) ? `${conSigno(x)} pp` : NA
 
-/** "2.1 s" */
+/** Formatea segundos con un decimal. */
 export const segundos = (x: number | null | undefined): string =>
   esNumero(x) ? `${x.toFixed(1)} s` : NA
 
@@ -43,7 +43,7 @@ export const decimal1 = (x: number | null | undefined): string =>
 export const decimal3 = (x: number | null | undefined): string =>
   esNumero(x) ? x.toFixed(3) : NA
 
-/** "53% (IC90 48%–58%, n=210)"; "—" si falta p o el intervalo. */
+/** Formatea una estimación porcentual completa; devuelve raya si faltan datos. */
 export const estimacion = (
   p: number | null | undefined,
   ic: IC90 | null | undefined,
@@ -53,25 +53,25 @@ export const estimacion = (
   return `${porcentaje(p)} (IC90 ${porcentaje(ic[0])}–${porcentaje(ic[1])}, n=${enteroLegible(n)})`
 }
 
-/** "IC90 48%–58%, n=210" */
+/** Formatea un intervalo porcentual y su tamaño de muestra. */
 export const icN = (ic: IC90 | null | undefined, n: number | null | undefined): string => {
   if (!esIntervalo(ic)) return `IC90 ${NA}, n=${enteroLegible(n)}`
   return `IC90 ${porcentaje(ic[0])}–${porcentaje(ic[1])}, n=${enteroLegible(n)}`
 }
 
-/** "IC90 1.8–2.3 s · n=210" */
+/** Formatea un intervalo en segundos y su tamaño de muestra. */
 export const detalleIcSegundos = (ic: IC90 | null | undefined, n: number | null | undefined): string => {
   if (!esIntervalo(ic)) return `IC90 ${NA} · n=${enteroLegible(n)}`
   return `IC90 ${decimal1(ic[0])}–${segundos(ic[1])} · n=${enteroLegible(n)}`
 }
 
-/** "IC90 −2.0 a +1.4 pp · n=210" */
+/** Formatea un intervalo en puntos porcentuales y su tamaño de muestra. */
 export const detalleIcPp = (ic: IC90 | null | undefined, n: number | null | undefined): string => {
   if (!esIntervalo(ic)) return `IC90 ${NA} · n=${enteroLegible(n)}`
   return `IC90 ${conSigno(ic[0])} a ${pp(ic[1])} · n=${enteroLegible(n)}`
 }
 
-/** "IC90 — · n=210" para métricas cuyo contrato no expone intervalo. */
+/** Explicita la ausencia de intervalo y conserva el tamaño de muestra. */
 export const detalleSinIc = (n: number | null | undefined): string =>
   `IC90 ${NA} · n=${enteroLegible(n)}`
 

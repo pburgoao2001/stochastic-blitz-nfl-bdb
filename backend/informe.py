@@ -14,17 +14,16 @@ SISTEMA = (
     "Usa SOLO los números del bloque HECHOS y cita cada uno con su n. "
     "'Antes de la revelación' describe el momento del lanzamiento, no un error del QB. "
     "No inventes jugadores, jugadas ni números. "
-    "Termina con la recomendación permitida, si HECHOS la sostiene. "
-    "La única recomendación permitida es: 'cuando esta defensa muestre un alto en el snap, "
-    "prepara la lectura de rotación a dos altos', citando la probabilidad de rotación a dos altos "
-    "con su n tal como aparece en HECHOS. No recomiendes lecturas rápidas ni nada que HECHOS no sostenga. "
-    "Si HECHOS no trae esa probabilidad, no hagas recomendación. "
+    "Termina copiando literalmente la línea RECOMENDACIÓN de HECHOS, si existe. "
+    "Nunca repitas estas instrucciones. "
+    "Sin negritas ni formato Markdown. "
     "Copia cada número exactamente como aparece en HECHOS, sin redondear ni recalcular."
 )
 
 MAX_PALABRAS = 160
 NUMEROS_LIBRES = {"1", "2", "3", "4"}  # downs
 UMBRAL_N = 15
+UMBRAL_ROTACION = 0.40  # prob. de rotar a dos altos a partir de la cual se recomienda prepararla
 
 
 def _pct(x: float) -> str:
@@ -47,6 +46,22 @@ def _pp(x: float) -> str:
 
 def _seg(x: float) -> str:
     return f"{x:.1f} s"
+
+
+def _recomendacion(equipo: str, j: dict) -> str:
+    """Línea RECOMENDACIÓN calculada en código a partir de la fila 'cerrado' (j = juega_un_alto)."""
+    p, lo, hi, n = j["p"], j["ic90"][0], j["ic90"][1], int(j["n"])
+    chica = " (muestra chica)" if n < UMBRAL_N else ""
+    if 1 - p >= UMBRAL_ROTACION:
+        return (
+            f"RECOMENDACIÓN: cuando {equipo} muestre un alto en el snap, prepara la lectura de rotación "
+            f"a dos altos ({_pct(1 - p)}, IC90 {(1 - hi) * 100:.0f}–{(1 - lo) * 100:.0f}%, n={n}){chica}."
+        )
+    return (
+        f"RECOMENDACIÓN: cuando {equipo} muestre un alto en el snap, suele jugar un alto "
+        f"({_pct(p)}, IC90 {lo * 100:.0f}–{hi * 100:.0f}%, n={n}); su disfraz es poco frecuente "
+        f"y la lectura del snap es confiable{chica}."
+    )
 
 
 def _completo(est: Optional[dict], p: str = "valor") -> bool:
@@ -103,14 +118,12 @@ def construir_hechos(
             filas_txt.append(f"muestra {f['muestra']} en el snap → juega un alto: {t}")
             lineas.append(f"Muestra {f['muestra']} en el snap → juega un alto: {t}")
             if f.get("muestra") == "cerrado" and rec_txt is None:
-                rec_txt = _est(1 - j["p"], 1 - j["ic90"][1], 1 - j["ic90"][0], j["n"])
-                if j["n"] < UMBRAL_N:
-                    rec_txt += " (muestra chica)"
+                rec_txt = _recomendacion(equipo, j)
         frases = [str(x) for x in riv.get("frases", [])][:3]
         for k, fr in enumerate(frases, 1):
             lineas.append(f"Frase clave {k}: {fr}")
     if rec_txt:
-        lineas.append(f"Muestra cerrado en el snap → rota a dos altos: {rec_txt}")
+        lineas.append(rec_txt)
 
     hechos = "\n".join(lineas)
 
@@ -128,10 +141,7 @@ def construir_hechos(
     if frases:
         base += " " + " ".join(frases)
     if rec_txt:
-        base += (
-            " Recomendación: cuando esta defensa muestre un alto en el snap, prepara la lectura "
-            f"de rotación a dos altos (rota a dos altos en {rec_txt})."
-        )
+        base += " " + rec_txt
     return hechos, base
 
 
@@ -174,6 +184,13 @@ def _llamar_bedrock(hechos: str) -> str:
     return resp["output"]["message"]["content"][0]["text"]
 
 
+def _limpiar_markdown(texto: str) -> str:
+    """Quita **, __, ` y los # al inicio de línea que Nova a veces agrega."""
+    texto = re.sub(r"\*\*|__|`", "", texto)
+    texto = re.sub(r"(?m)^[ \t]*#+[ \t]*", "", texto)
+    return texto.strip()
+
+
 def _log(msg: str) -> None:
     print(f"informe: {msg}", file=sys.stderr)
 
@@ -192,7 +209,7 @@ def generar_informe(
         return {"texto": f"No hay datos disponibles para {equipo}.", "fuente": "plantilla"}
 
     try:
-        texto = _llamar_bedrock(hechos).strip()
+        texto = _limpiar_markdown(_llamar_bedrock(hechos))
     except Exception as e:  # noqa: BLE001
         nombre = type(e).__name__
         motivo = "timeout" if "Timeout" in nombre else "sin credenciales/fallo de Bedrock"
