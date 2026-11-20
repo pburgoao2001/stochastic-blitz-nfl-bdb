@@ -1,0 +1,177 @@
+{
+  "entradas": {
+    "archivos_tracking": 122,
+    "filas_tracking": 8314178,
+    "jugadas_plays": 8557
+  },
+  "salidas": {
+    "frames_def_filas": 2771172,
+    "frames_def_jugadas": 7583,
+    "jugadas_base_filas": 8557,
+    "jugadas_descartadas": 974
+  },
+  "exclusiones": {
+    "sin evento de snap": {
+      "n": 24,
+      "passResult": {
+        "C": 15,
+        "I": 5,
+        "IN": 1,
+        "R": 2,
+        "S": 1
+      }
+    },
+    "sin evento de pase": {
+      "n": 950,
+      "passResult": {
+        "C": 2,
+        "I": 1,
+        "R": 435,
+        "S": 512
+      }
+    }
+  },
+  "verificaciones": {
+    "diez_hz": {
+      "segundos_completos_por_numero_de_cuadros": {
+        "2": 1,
+        "3": 1,
+        "6": 2,
+        "7": 2,
+        "10": 26707
+      }
+    },
+    "direccion": {
+      "valores": [
+        "left",
+        "right"
+      ],
+      "jugadas_con_mas_de_una": 0
+    },
+    "normalizacion_en_snap": {
+      "n": 7583,
+      "mediana_defensa_delante_del_balon": 7582,
+      "jugadas_defensa_no_delante": [
+        [
+          2021091212,
+          912
+        ]
+      ],
+      "qb_pff_encontrado": 7583,
+      "qb_detras_del_balon": 7580
+    },
+    "equipos": {
+      "filas_sin_equipo_reconocido": 0,
+      "defensores_en_snap": {
+        "11": 7583
+      },
+      "ofensivos_en_snap": {
+        "11": 7583
+      },
+      "jugadas_mismos_defensores_que_pff": 7583
+    },
+    "frames_def": {
+      "filas_por_cuadro": {
+        "12.0": 7583
+      },
+      "jugadas_con_cuadros_faltantes": 0
+    },
+    "snap": {
+      "fuente": {
+        "autoevent_ballsnap": 1,
+        "ball_snap": 7582
+      },
+      "jugadas_con_ambos_eventos": 3756,
+      "ball_snap_menos_autoevent": {
+        "n": 3756,
+        "p0": -6.0,
+        "p5": -2.0,
+        "p50": 1.0,
+        "p95": 2.0,
+        "p100": 167.0
+      },
+      "ambos_con_diferencia_mayor_a_2_cuadros": 190,
+      "vel_balon_mediana_rel_snap_elegido": {
+        "n": 7583,
+        "-3": 0.0,
+        "-2": 0.0,
+        "-1": 0.0,
+        "0": 0.03,
+        "1": 4.01,
+        "2": 5.96,
+        "3": 5.98
+      },
+      "diferencia_mayor_2_vel_rel_ball_snap": {
+        "n": 190,
+        "-3": 0.0,
+        "-2": 0.0,
+        "-1": 0.0,
+        "0": 0.0,
+        "1": 0.04,
+        "2": 4.95,
+        "3": 5.59
+      },
+      "diferencia_mayor_2_vel_rel_autoevent": {
+        "n": 190,
+        "-3": 0.0,
+        "-2": 0.0,
+        "-1": 0.06,
+        "0": 0.75,
+        "1": 3.6,
+        "2": 4.27,
+        "3": 4.25
+      }
+    },
+    "pase": {
+      "fuente": {
+        "autoevent_passforward": 57,
+        "pass_forward": 7526
+      },
+      "passResult_incluidas": {
+        "C": 4603,
+        "I": 2749,
+        "IN": 189,
+        "R": 12,
+        "S": 30
+      },
+      "t_pase_segundos": {
+        "n": 7583,
+        "p0": 0.6,
+        "p5": 1.8,
+        "p50": 2.7,
+        "p95": 5.0,
+        "p100": 9.8
+      }
+    },
+    "absoluteYardlineNumber": {
+      "abs_dif_vs_x_crudo_balon_snap": {
+        "n": 7582,
+        "p0": 0.0,
+        "p5": 0.03,
+        "p50": 0.36,
+        "p95": 1.53,
+        "p100": 7.66
+      },
+      "jugadas_dif_mayor_2_yardas": 122,
+      "abs_dif_vs_x_normalizado_balon_snap": {
+        "n": 7582,
+        "p0": 0.0,
+        "p5": 0.08,
+        "p50": 2.89,
+        "p95": 78.71,
+        "p100": 102.87
+      }
+    },
+    "n_rushers": {
+      "0": 1,
+      "1": 2,
+      "2": 16,
+      "3": 420,
+      "4": 6011,
+      "5": 1689,
+      "6": 348,
+      "7": 69,
+      "8": 1
+    }
+  }
+}
