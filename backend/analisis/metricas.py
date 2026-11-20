@@ -269,12 +269,14 @@ def _validacion(registro: dict) -> dict:
     m = registro["validacion"]["metricas"]
     exa, regla = m["modelo_exactitud_umbral_0.5"], m["regla_exactitud_en_todas"]
     n = registro["validacion"]["n"]
+    # Desde los conteos (478/607 = 78.748%), no desde el valor ya redondeado a 4 decimales (0.7875 -> 78.8%).
+    p, lo, hi = wilson(exa["aciertos"], exa["n"])
+    p_regla = regla["aciertos"] / regla["n"]
     texto = (f"En {n} jugadas de las semanas 7-8, que el lector no vio al ajustarse, acierta "
-             f"{exa['valor']:.1%} (IC90 {exa['ic90_wilson'][0]:.1%}-{exa['ic90_wilson'][1]:.1%}) contra "
-             f"{regla['valor']:.1%} de la regla simple; AUC {m['modelo_auc']['valor']:.2f}, "
-             f"Brier {m['modelo_brier']['valor']:.3f}.")
-    return {"exactitud": exa["valor"], "auc": m["modelo_auc"]["valor"], "brier": m["modelo_brier"]["valor"],
-            "exactitud_regla": regla["valor"], "n": n, "texto": texto}
+             f"{p:.1%} (IC90 {lo:.1%}-{hi:.1%}) contra {p_regla:.1%} de la regla simple; "
+             f"AUC {m['modelo_auc']['valor']:.2f}, Brier {m['modelo_brier']['valor']:.3f}.")
+    return {"exactitud": round(p, 6), "auc": m["modelo_auc"]["valor"], "brier": m["modelo_brier"]["valor"],
+            "exactitud_regla": round(p_regla, 6), "n": n, "texto": texto}
 
 
 def _con_signo(x: float) -> str:

@@ -39,6 +39,14 @@ except Exception as e:  # noqa: BLE001
     print(f"[warn] metricas.py no disponible: {e}", file=sys.stderr)
     DATA_SOURCE = "mock"
 
+# La carga de repeticiones es independiente del resto de las métricas.
+try:
+    from backend.analisis.metricas import replays as _replays
+
+    REPLAYS = _replays()
+except Exception as e:  # noqa: BLE001
+    print(f"[warn] replays() no disponible: {e}", file=sys.stderr)
+
 app = FastAPI(title="Hackathon NFL UNAM")
 
 

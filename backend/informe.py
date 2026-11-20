@@ -18,7 +18,8 @@ SISTEMA = (
     "La única recomendación permitida es: 'cuando esta defensa muestre un alto en el snap, "
     "prepara la lectura de rotación a dos altos', citando la probabilidad de rotación a dos altos "
     "con su n tal como aparece en HECHOS. No recomiendes lecturas rápidas ni nada que HECHOS no sostenga. "
-    "Si HECHOS no trae esa probabilidad, no hagas recomendación."
+    "Si HECHOS no trae esa probabilidad, no hagas recomendación. "
+    "Copia cada número exactamente como aparece en HECHOS, sin redondear ni recalcular."
 )
 
 MAX_PALABRAS = 160

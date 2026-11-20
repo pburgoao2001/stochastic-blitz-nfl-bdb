@@ -34,3 +34,25 @@ export interface RivalData {
   validacion_tarjeta?: { brier_mezcla?: number | null; brier_liga?: number | null; brier_equipo?: number | null } | null
   frases: string[]
 }
+
+export interface ReplayFrame {
+  t: number
+  def: Array<[number, number]>
+  of: Array<[number, number]>
+  balon: [number, number]
+  estructura: string
+}
+
+export interface ReplayEventos {
+  snap: number
+  revela: number | null
+  lanza: number
+}
+
+export interface ReplayData {
+  gameId: string | number
+  playId: string | number
+  descripcion: string
+  frames: ReplayFrame[]
+  eventos: ReplayEventos
+}
