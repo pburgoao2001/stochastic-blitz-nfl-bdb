@@ -14,3 +14,13 @@ __pycache__/
 *.pem
 *.key
 .aws/
+
+# Datos crudos: no se versionan; solo los derivados CSV/JSON de data/derivado/
+data/*
+!data/derivado/
+data/derivado/*
+!data/derivado/*.csv
+!data/derivado/*.json
+
+# Objetos serializados
+*.pkl

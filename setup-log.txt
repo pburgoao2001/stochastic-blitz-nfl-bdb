@@ -298,3 +298,40 @@ Revisando desviaciones del stack...
 08:45:04 
 RESULTADO: TODO OK, puedes entregar.
 08:45:04 FIN con código de salida 0
+
+===== setup 2026-11-20 10:12:43 =====
+10:12:43 Sistema detectado: windows x64  |  Python del arranque: 3.12.12
+10:12:43 MODO: check  |  versión del script: 2026-11-16  |  argumentos: --check
+10:12:43 SISTEMA: Windows-11-10.0.26200-SP0  |  detectado: windows x64  |  versión: 10.0.26200
+10:12:43 WINDOWS: build 26200  |  administrador: False
+10:12:43 PYTHON: 3.12.12 (C:\Users\pablo\Downloads\plantilla-hackathon\hackathon-unam\.venv\Scripts\python.exe)
+10:12:43 USUARIO: pablo  |  carpeta actual: C:\Users\pablo\Downloads\plantilla-hackathon\hackathon-unam
+10:12:43 PROYECTO: C:\Users\pablo\Downloads\plantilla-hackathon\hackathon-unam  |  largo de ruta: 59  |  espacios: False  |  no ASCII: False
+10:12:43 DISCO LIBRE: 38.4 GB
+10:12:43 PROXY: ninguno
+10:12:43 Proyecto: C:\Users\pablo\Downloads\plantilla-hackathon\hackathon-unam
+10:12:43 
+Validando (no se descarga ni instala nada)...
+10:12:52 $ C:\Users\pablo\Downloads\plantilla-hackathon\hackathon-unam\.hackathon\.tools\uv\uv.exe pip check --python C:\Users\pablo\Downloads\plantilla-hackathon\hackathon-unam\.venv\Scripts\python.exe
+10:12:52 Checked 57 packages in 31ms
+All installed packages are compatible
+10:12:52 $ C:\Users\pablo\Downloads\plantilla-hackathon\hackathon-unam\.venv\Scripts\python.exe -c import pandas, numpy, fastapi, uvicorn, pydantic, strands, boto3, httpx
+10:12:57 
+10:12:57   Pieza              Esperado                            Encontrado      Estado
+10:12:57   -----------------  ----------------------------------  --------------  ------
+10:12:57   uv                 0.11.19                             0.11.19         OK    
+10:12:57   Python (.venv)     3.12.12                             3.12.12         OK    
+10:12:57   Node               v22.23.1                            v22.23.1        OK    
+10:12:57   npm                10.x                                10.9.8          OK    
+10:12:57   Paquetes Python    9 fijos                             9 coinciden     OK    
+10:12:57   Paquetes npm       12 fijos                            12 coinciden    OK    
+10:12:57   pip check          sin conflictos                      sin conflictos  OK    
+10:12:57   Importar paquetes  pandas, fastapi, pydantic, strands  importan        OK    
+10:12:57 
+Revisando desviaciones del stack...
+10:12:57 $ C:\Users\pablo\Downloads\plantilla-hackathon\hackathon-unam\.venv\Scripts\python.exe -c import backend.main as m;assert hasattr(m,'app'), 'APP';assert any(getattr(r,'path','')=='/health' for r in m.app.routes), 'HEALTH'
+10:12:58 
+10:12:58     El proyecto sigue el stack del evento
+10:12:58 
+RESULTADO: TODO OK, puedes entregar.
+10:12:58 FIN con código de salida 0
