@@ -1,0 +1,385 @@
+{
+  "pre_registro": {
+    "rasgos": [
+      "n10",
+      "n15",
+      "dmid_campo",
+      "dmid_balon",
+      "separacion",
+      "prof1"
+    ],
+    "cerrado": [
+      "Cover-1",
+      "Cover-3"
+    ],
+    "abierto": [
+      "Cover-2",
+      "2-Man",
+      "Quarters",
+      "Cover-6"
+    ],
+    "semanas_entrenamiento": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "semanas_validacion": [
+      7,
+      8
+    ],
+    "cuadro_muestra_s": 2.0,
+    "t_pase_minimo_s": 3.0,
+    "l2_rejilla": [
+      0.1,
+      1.0,
+      10.0
+    ],
+    "bloques_cv": 5,
+    "umbrales": {
+      "cerrado": 0.65,
+      "abierto": 0.35
+    },
+    "bootstrap": {
+      "B": 2000,
+      "semilla": 2026,
+      "unidad": "gameId"
+    }
+  },
+  "respaldos_rasgos": {
+    "cuadros": 229439,
+    "sin_defensor_a_5yd__prof1_5": 1988,
+    "menos_de_2_a_5yd__separacion_0": 10153,
+    "sin_defensor_a_10yd__dmid_26.65": 13334
+  },
+  "entrenamiento": {
+    "embudo": {
+      "jugadas": 5821,
+      "descartadas_t_pase_menor_a_3s": 3503,
+      "descartadas_cobertura_fuera_de_la_verdad": {
+        "Red Zone": 105,
+        "Cover-0": 43,
+        "Bracket": 17,
+        "Prevent": 14,
+        "Goal Line": 4,
+        "Miscellaneous": 1
+      },
+      "incluidas": 2134
+    },
+    "n": 2134,
+    "partidos": 94,
+    "tasa_cerrado": 0.5712,
+    "cv": {
+      "0.1": {
+        "log_loss": 0.4987,
+        "auc": 0.8615
+      },
+      "1.0": {
+        "log_loss": 0.4987,
+        "auc": 0.8616
+      },
+      "10.0": {
+        "log_loss": 0.4985,
+        "auc": 0.8623
+      }
+    },
+    "l2_elegido": 10.0,
+    "intercepto": 0.8687,
+    "coef": {
+      "n10": -0.4535,
+      "n15": -1.2992,
+      "dmid_campo": -0.1884,
+      "dmid_balon": -0.0416,
+      "separacion": -0.1155,
+      "prof1": 0.2486
+    },
+    "coef_estandarizados": {
+      "n10": -0.5427,
+      "n15": -0.9181,
+      "dmid_campo": -0.6422,
+      "dmid_balon": -0.137,
+      "separacion": -0.5825,
+      "prof1": 0.8138
+    }
+  },
+  "validacion": {
+    "embudo": {
+      "jugadas": 1720,
+      "descartadas_t_pase_menor_a_3s": 1057,
+      "descartadas_cobertura_fuera_de_la_verdad": {
+        "Red Zone": 31,
+        "Cover-0": 12,
+        "Prevent": 6,
+        "Bracket": 5,
+        "Goal Line": 2
+      },
+      "incluidas": 607
+    },
+    "n": 607,
+    "partidos": 28,
+    "metricas": {
+      "modelo_exactitud_umbral_0.5": {
+        "valor": 0.7875,
+        "ic90_bootstrap_partido": [
+          0.7583,
+          0.8155
+        ],
+        "aciertos": 478,
+        "n": 607,
+        "ic90_wilson": [
+          0.7589,
+          0.8135
+        ]
+      },
+      "modelo_auc": {
+        "valor": 0.8386,
+        "ic90_bootstrap_partido": [
+          0.8087,
+          0.868
+        ],
+        "n": 607
+      },
+      "modelo_brier": {
+        "valor": 0.1625,
+        "ic90_bootstrap_partido": [
+          0.1481,
+          0.1777
+        ],
+        "n": 607
+      },
+      "modelo_3clases_decididas": {
+        "valor": 0.7315,
+        "ic90_bootstrap_partido": [
+          0.7008,
+          0.7643
+        ],
+        "aciertos": 444,
+        "n": 607,
+        "ic90_wilson": [
+          0.7009,
+          0.76
+        ]
+      },
+      "modelo_3clases_exactitud_en_decididas": {
+        "valor": 0.8468,
+        "ic90_bootstrap_partido": [
+          0.8192,
+          0.8739
+        ],
+        "aciertos": 376,
+        "n": 444,
+        "ic90_wilson": [
+          0.8166,
+          0.8729
+        ]
+      },
+      "modelo_3clases_exactitud_en_todas": {
+        "valor": 0.6194,
+        "ic90_bootstrap_partido": [
+          0.5892,
+          0.651
+        ],
+        "aciertos": 376,
+        "n": 607,
+        "ic90_wilson": [
+          0.5866,
+          0.6513
+        ]
+      },
+      "regla_decididas": {
+        "valor": 0.9456,
+        "ic90_bootstrap_partido": [
+          0.9295,
+          0.962
+        ],
+        "aciertos": 574,
+        "n": 607,
+        "ic90_wilson": [
+          0.9284,
+          0.9589
+        ]
+      },
+      "regla_exactitud_en_decididas": {
+        "valor": 0.77,
+        "ic90_bootstrap_partido": [
+          0.7412,
+          0.8022
+        ],
+        "aciertos": 442,
+        "n": 574,
+        "ic90_wilson": [
+          0.7399,
+          0.7976
+        ]
+      },
+      "regla_exactitud_en_todas": {
+        "valor": 0.7282,
+        "ic90_bootstrap_partido": [
+          0.6972,
+          0.7622
+        ],
+        "aciertos": 442,
+        "n": 607,
+        "ic90_wilson": [
+          0.6975,
+          0.7568
+        ]
+      },
+      "tasa_cerrado_pff": {
+        "valor": 0.5865,
+        "ic90_bootstrap_partido": [
+          0.5484,
+          0.629
+        ],
+        "aciertos": 356,
+        "n": 607,
+        "ic90_wilson": [
+          0.5533,
+          0.6189
+        ]
+      }
+    },
+    "confusion": {
+      "modelo_umbral_0.5": {
+        "cerrado": {
+          "cerrado": 305,
+          "abierto": 51
+        },
+        "abierto": {
+          "cerrado": 78,
+          "abierto": 173
+        }
+      },
+      "modelo_3clases": {
+        "cerrado": {
+          "cerrado": 250,
+          "abierto": 31,
+          "indeterminado": 75
+        },
+        "abierto": {
+          "cerrado": 37,
+          "abierto": 126,
+          "indeterminado": 88
+        }
+      },
+      "regla": {
+        "cerrado": {
+          "cerrado": 313,
+          "abierto": 16,
+          "indeterminado": 27
+        },
+        "abierto": {
+          "cerrado": 116,
+          "abierto": 129,
+          "indeterminado": 6
+        }
+      }
+    }
+  },
+  "estructura_en_snap": {
+    "n_jugadas": 7541,
+    "n_partidos": 122,
+    "global": {
+      "cerrado": {
+        "n": 4105,
+        "pct": 0.5444,
+        "ic90_bootstrap_partido": [
+          0.5289,
+          0.5602
+        ]
+      },
+      "abierto": {
+        "n": 1465,
+        "pct": 0.1943,
+        "ic90_bootstrap_partido": [
+          0.183,
+          0.206
+        ]
+      },
+      "indeterminado": {
+        "n": 1971,
+        "pct": 0.2614,
+        "ic90_bootstrap_partido": [
+          0.2483,
+          0.2741
+        ]
+      }
+    },
+    "por_verdad_pff": {
+      "cerrado": {
+        "n": 4121,
+        "cerrado": {
+          "pct": 0.7071,
+          "ic90_bootstrap_partido": [
+            0.6896,
+            0.7243
+          ]
+        },
+        "abierto": {
+          "pct": 0.0876,
+          "ic90_bootstrap_partido": [
+            0.078,
+            0.0969
+          ]
+        },
+        "indeterminado": {
+          "pct": 0.2053,
+          "ic90_bootstrap_partido": [
+            0.1908,
+            0.22
+          ]
+        }
+      },
+      "abierto": {
+        "n": 2753,
+        "cerrado": {
+          "pct": 0.3876,
+          "ic90_bootstrap_partido": [
+            0.3647,
+            0.4107
+          ]
+        },
+        "abierto": {
+          "pct": 0.2368,
+          "ic90_bootstrap_partido": [
+            0.2164,
+            0.2589
+          ]
+        },
+        "indeterminado": {
+          "pct": 0.3756,
+          "ic90_bootstrap_partido": [
+            0.3568,
+            0.3938
+          ]
+        }
+      },
+      "fuera": {
+        "n": 667,
+        "cerrado": {
+          "pct": 0.1859,
+          "ic90_bootstrap_partido": [
+            0.1585,
+            0.2132
+          ]
+        },
+        "abierto": {
+          "pct": 0.6777,
+          "ic90_bootstrap_partido": [
+            0.643,
+            0.7145
+          ]
+        },
+        "indeterminado": {
+          "pct": 0.1364,
+          "ic90_bootstrap_partido": [
+            0.1125,
+            0.1609
+          ]
+        }
+      }
+    }
+  }
+}
