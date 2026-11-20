@@ -22,6 +22,24 @@ Pre-registrado en el commit `d2146f5`, antes de mirar las semanas 7-8. Después 
 - Validación: semanas 7-8 con el mismo criterio, corrida una sola vez. Las exactitudes llevan IC 90% de Wilson, como se pidió, y además bootstrap por partido. AUC y Brier llevan bootstrap por partido.
 - Clase final por cuadro: P(cerrado) ≥ 0.65 es cerrado, ≤ 0.35 es abierto y lo de en medio es indeterminado.
 
+## La carrera (`preparar.py jugadas` y `metricas.py`)
+
+Decisiones tomadas antes de calcular el efecto:
+
+1. **Universo:** `dist_endzone` ≥ 20 y cobertura con etiqueta (un alto o dos altos). Quedan 6,380 jugadas.
+2. **Muestra:** solo cuenta si el lector decide en el snap (P ≥ 0.65 o ≤ 0.35). Las indeterminadas en el snap (1,774) quedan fuera del análisis de disfraz.
+3. **Disfraz** = muestra decidida distinta de juega. Se reportan el ID observado y el ID corregido con Rogan-Gladen, calculado dentro de cada clase de PFF con la sensibilidad y la especificidad del lector de 3 clases cuando decide (semanas 7-8). El bootstrap remuestrea por partido el universo y, por separado, la validación. **El titular usa el corregido.** En la API, `id_liga` y `equipos` están en escala observada, que es la comparable entre sí.
+4. **revela_t:** primer cuadro desde el cual el lector decide la clase de PFF y ya no cambia hasta el pase. Si eso no pasa antes del cuadro del pase, se censura en `t_pase` (Kaplan-Meier).
+5. El error del lector es no diferencial, así que el efecto de "a ciegas" está sesgado hacia 0: es una estimación conservadora. Queda escrito en `descubrimiento.md` y en el `README`.
+6. **Sensibilidad:** efecto principal sin `flag_linea`, -1.4 pp (IC90 -6.2 a +2.7, n = 1,146), contra -1.9 pp (IC90 -6.6 a +2.3, n = 1,168) completo. **Hecha.**
+
+Definiciones:
+- **Éxito:** queda vacío si hubo castigo (`foulName1`). En 1.er down, `prePenaltyPlayResult` ≥ 0.4·yardsToGo; en 2.º, ≥ 0.6·yardsToGo; en 3.º y 4.º, ≥ yardsToGo. Las intercepciones cuentan como fracaso.
+- **Efecto:** logística por IRLS de éxito sobre ciega, entre jugadas con disfraz. Controles: tramos de t_pase (<2.0, 2.0-2.5, 2.5-3.0, ≥3.0), down, distancia (1-3, 4-6, 7+), zona (propia > 50, medio 20-50, roja ≤ 20; la roja tiene 1 jugada), n_rushers, shotgun y play action. Se usa l2 = 1e-6 solo por estabilidad numérica. Se reporta el efecto marginal promedio en pp. Convergieron las 300 réplicas; si no, se usaría Mantel-Haenszel.
+- **equipos():** beta-binomial empírico sobre disfraz/decididas por defensa (mu = 0.275, kappa = 35.5). El IC sale de 20,000 sorteos de la posterior. La mediana de revelación queda vacía si el equipo tiene menos de 20 jugadas con disfraz.
+- **rival():** P(juega un alto | lo que muestra en el snap), encogida hacia la liga con kappa beta-binomial. La `validacion_tarjeta` es el Brier en semanas 7-8 usando las semanas 1-6: mezcla 0.197, liga 0.203, equipo 0.199. El éxito por formación lleva IC de Wilson.
+- **estabilidad:** queda vacía (`null`) por ahora.
+
 ## Pendientes
 
-- Prueba de sensibilidad del efecto principal sin las jugadas con `flag_linea`.
+- `estabilidad` (r y Spearman-Brown) está vacía.

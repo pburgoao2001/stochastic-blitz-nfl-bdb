@@ -11,8 +11,11 @@ Lee cada archivo de data/ una sola vez y escribe en data/derivado/:
   exclusiones_preparar.csv  Jugadas que no entran a frames_def y su motivo.
   preparar_resumen.json     Conteos y verificaciones de convenciones de la corrida.
 
-Uso, desde la raíz del proyecto:
-    ./.venv/Scripts/python.exe -m backend.analisis.preparar
+Tubería completa, desde la raíz del proyecto:
+    1. ./.venv/Scripts/python.exe -m backend.analisis.preparar            (cuadros: lo de arriba)
+    2. ./.venv/Scripts/python.exe -m backend.analisis.estructura          (lector de estructura)
+    3. ./.venv/Scripts/python.exe -m backend.analisis.preparar jugadas    (jugadas.csv; ver preparar_jugadas)
+    4. ./.venv/Scripts/python.exe -m backend.analisis.metricas            (revisión de la API)
 
 Convenciones (cada corrida las verifica con los datos y las reporta):
   - 10 cuadros por segundo: t = (frameId - frame_snap) / 10.
@@ -47,6 +50,11 @@ ROLES_DEFENSA_PFF = ["Coverage", "Pass Rush"]
 PASES_ANALISIS = ["C", "I", "IN"]
 LINEA_GOL = 110.0
 TOLERANCIA_LINEA = 2.0
+DIST_MIN_UNIVERSO = 20.0
+COLS_JUGADAS = ["gameId", "playId", "week", "defensiveTeam", "possessionTeam", "down", "yardsToGo",
+                "dist_endzone", "offenseFormation", "pff_playAction", "passResult", "prePenaltyPlayResult",
+                "foulName1", "pff_passCoverage", "n_rushers", "t_pase", "flag_linea", "p_snap",
+                "muestra", "juega", "disfraz", "revela_t", "evento_revela", "ciega", "exito"]
 CLAVE = ["gameId", "playId"]
 COLS_TRACKING = ["gameId", "playId", "nflId", "frameId", "time", "team",
                  "playDirection", "x", "y", "s", "event"]
@@ -274,5 +282,118 @@ def main() -> None:
     print(f"tiempo: lectura {t_lectura:.1f} s, total {t_total:.1f} s")
 
 
+def preparar_jugadas() -> None:
+    """Etapa 3, después de estructura.py: data/derivado/jugadas.csv, una fila por jugada del universo.
+
+    Universo de la carrera: jugadas del análisis con dist_endzone >= 20 y cobertura con etiqueta
+    (cerrado: Cover-1/Cover-3; abierto: Cover-2/2-Man/Quarters/Cover-6).
+      muestra       clase del lector en el snap (cerrado, abierto o indeterminado); p_snap = P(cerrado).
+      juega         clase según PFF.
+      disfraz       1 si muestra != juega; vacío si el lector no decide en el snap.
+      revela_t      con disfraz: primer instante desde el cual la clase del lector coincide con juega y
+                    ya no cambia hasta el pase. evento_revela = 1 si ese instante es anterior al cuadro
+                    del pase; si no, revela_t = t_pase y evento_revela = 0 (censurada).
+                    Sin disfraz: revela_t = 0 y evento_revela = 1.
+      ciega         1 si hay disfraz y evento_revela = 0.
+      exito         vacío si hubo castigo (foulName1). 1.º down: prePenaltyPlayResult >= 0.4*yardsToGo;
+                    2.º: >= 0.6*yardsToGo; 3.º y 4.º: >= yardsToGo. Intercepción (o sack) = 0.
+    También escribe validacion_jugadas.csv (las jugadas de validación del lector, para Rogan-Gladen)
+    y jugadas_resumen.json (embudo y conteos).
+    """
+    from . import estructura as E
+
+    t0 = time.perf_counter()
+    base = pd.read_csv(DERIVADO / "jugadas_base.csv")
+    cuadros = pd.read_pickle(DERIVADO / "estructura_cuadros.pkl")
+    cuadros = cuadros.merge(base[CLAVE + ["frame_snap", "frame_pase", "week", "pff_passCoverage"]], on=CLAVE)
+    cuadros["rel"] = (cuadros["frameId"] - cuadros["frame_snap"]).astype(int)
+
+    def clase_pff(cobertura: pd.Series) -> np.ndarray:
+        return np.select([cobertura.isin(E.CERRADO), cobertura.isin(E.ABIERTO)], ["cerrado", "abierto"], default="")
+
+    # Universo de la carrera.
+    j = base.merge(cuadros[CLAVE].drop_duplicates(), on=CLAVE)
+    j["juega"] = clase_pff(j["pff_passCoverage"])
+    reglas = [(f"dist_endzone < {DIST_MIN_UNIVERSO:g}", j["dist_endzone"] < DIST_MIN_UNIVERSO),
+              ("cobertura sin etiqueta", j["juega"].eq(""))]
+    j["motivo"] = np.select([c.to_numpy() for _, c in reglas], [m for m, _ in reglas], default="")
+    fuera = j[j["motivo"].ne("")]
+    u = j[j["motivo"].eq("")].drop(columns="motivo").reset_index(drop=True)
+
+    # Muestra en el snap y disfraz (solo si el lector decide).
+    snap = cuadros.loc[cuadros["rel"] == 0, CLAVE + ["p_cerrado", "estructura"]].rename(
+        columns={"p_cerrado": "p_snap", "estructura": "muestra"})
+    u = u.merge(snap, on=CLAVE, how="left")
+    u["muestra"] = u["muestra"].astype(str)
+    decide = u["muestra"].ne("indeterminado")
+    u["disfraz"] = u["muestra"].ne(u["juega"]).astype("Int64").where(decide)
+
+    # Revelación: último cuadro (snap..pase) en que la clase del lector no coincide con juega.
+    c = cuadros.merge(u[CLAVE + ["juega"]], on=CLAVE)
+    ultimo = (c.loc[c["estructura"].astype(str).ne(c["juega"])].groupby(CLAVE)["frameId"].max()
+              .rename("ultimo_no_coincide"))
+    u = u.join(ultimo, on=CLAVE)
+    primero_estable = u["ultimo_no_coincide"] + 1
+    dis = u["disfraz"].eq(1).fillna(False).to_numpy(bool)
+    sin = u["disfraz"].eq(0).fillna(False).to_numpy(bool)
+    assert u.loc[dis, "ultimo_no_coincide"].notna().all(), "una jugada con disfraz debe no coincidir en el snap"
+    antes = (primero_estable < u["frame_pase"]).to_numpy(bool)
+    revela_t = np.full(len(u), np.nan)
+    revela_t[dis & antes] = ((primero_estable - u["frame_snap"]) / HZ).to_numpy()[dis & antes]
+    revela_t[dis & ~antes] = u["t_pase"].to_numpy()[dis & ~antes]
+    revela_t[sin] = 0.0
+    u["revela_t"] = np.round(revela_t, 1)
+    u["evento_revela"] = pd.array(np.where(dis, antes, sin).astype(int), dtype="Int64")
+    u["ciega"] = pd.array((dis & ~antes).astype(int), dtype="Int64")
+    u.loc[~(dis | sin), ["evento_revela", "ciega"]] = pd.NA
+
+    # Éxito (vacío si hubo castigo).
+    umbral = np.select([u["down"].eq(1), u["down"].eq(2)], [0.4 * u["yardsToGo"], 0.6 * u["yardsToGo"]],
+                       default=u["yardsToGo"])
+    logro = (u["prePenaltyPlayResult"] >= umbral) & ~u["passResult"].isin(["S", "IN"])
+    u["exito"] = logro.astype("Int64").where(u["foulName1"].isna())
+
+    # Jugadas de validación del lector (mismo criterio pre-registrado), para sensibilidad/especificidad.
+    v = cuadros[(cuadros["rel"] == E.CUADRO_MUESTRA)
+                & ((cuadros["frame_pase"] - cuadros["frame_snap"]) >= E.MIN_CUADROS_PASE)
+                & cuadros["week"].isin(E.SEMANAS_VALIDACION)].copy()
+    v["verdad"] = clase_pff(v["pff_passCoverage"])
+    v = v.loc[v["verdad"].ne(""), CLAVE + ["verdad", "estructura", "p_cerrado"]]
+    registro = json.loads((DERIVADO / "validacion.json").read_text(encoding="utf-8"))
+    conf = registro["validacion"]["confusion"]["modelo_3clases"]
+    propia = pd.crosstab(v["verdad"], v["estructura"].astype(str))
+    assert len(v) == registro["validacion"]["n"], "validacion_jugadas no coincide con validacion.json"
+    assert all(int(propia.loc[f, k]) == conf[f][k] for f in conf for k in conf[f]), "confusión distinta"
+
+    DERIVADO.mkdir(parents=True, exist_ok=True)
+    u[COLS_JUGADAS].to_csv(DERIVADO / "jugadas.csv", index=False)
+    v.to_csv(DERIVADO / "validacion_jugadas.csv", index=False)
+    resumen = {
+        "universo": {"jugadas_analisis": int(len(j)),
+                     "excluidas": {m: int((fuera["motivo"] == m).sum()) for m, _ in reglas},
+                     "cobertura_sin_etiqueta_por_tipo": {str(k): int(n) for k, n in
+                                                         fuera.loc[fuera["motivo"] == "cobertura sin etiqueta",
+                                                                   "pff_passCoverage"].value_counts().items()},
+                     "incluidas": int(len(u))},
+        "muestra_en_snap": {str(k): int(n) for k, n in u["muestra"].value_counts().items()},
+        "decididas": int(decide.sum()), "con_disfraz": int(dis.sum()), "sin_disfraz": int(sin.sum()),
+        "disfraz_revelado_antes_del_pase": int((dis & antes).sum()), "ciegas": int((dis & ~antes).sum()),
+        "exito": {"con_valor": int(u["exito"].notna().sum()), "excluidas_por_castigo": int(u["exito"].isna().sum())},
+        "validacion_jugadas": int(len(v)),
+    }
+    (DERIVADO / "jugadas_resumen.json").write_text(json.dumps(resumen, ensure_ascii=False, indent=2),
+                                                   encoding="utf-8")
+    print(json.dumps(resumen, ensure_ascii=False))
+    print(f"tiempo: {time.perf_counter() - t0:.1f} s")
+
+
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    lector = argparse.ArgumentParser(description="Prepara los insumos de La Carrera Invisible.")
+    lector.add_argument("etapa", nargs="?", default="cuadros", choices=["cuadros", "jugadas"],
+                        help="cuadros (por omisión) o jugadas (después de estructura.py)")
+    if lector.parse_args().etapa == "jugadas":
+        preparar_jugadas()
+    else:
+        main()

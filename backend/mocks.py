@@ -8,14 +8,14 @@ EQUIPOS_NFL = [
 ]
 
 RESUMEN = {
-    "titular": "Cuando la defensa lee la jugada a tiempo, el ataque pierde 8.4 pp de éxito.",
+    "titular": "Cuando el QB lanza antes de que la defensa revele su cobertura, su éxito cambia 8.4 pp",
     "n_jugadas": 12840,
     "id_liga": {"valor": 0.47, "ic90": [0.44, 0.50], "n": 12840},
     "efecto": {"valor_pp": 8.4, "ic90": [6.1, 10.7], "n": 12840, "metodo": "Regresión logística con efectos fijos (datos de prueba)"},
     "contraste": [
-        {"estrato": "1-3 yardas", "ciega": {"exito": 0.58, "ic90": [0.55, 0.61], "n": 2100}, "leida": {"exito": 0.51, "ic90": [0.48, 0.54], "n": 1900}},
-        {"estrato": "4-6 yardas", "ciega": {"exito": 0.49, "ic90": [0.46, 0.52], "n": 2300}, "leida": {"exito": 0.40, "ic90": [0.37, 0.43], "n": 2150}},
-        {"estrato": "7+ yardas", "ciega": {"exito": 0.41, "ic90": [0.38, 0.44], "n": 1900}, "leida": {"exito": 0.31, "ic90": [0.28, 0.34], "n": 2490}},
+        {"estrato": "menos de 2.5 s", "ciega": {"exito": 0.54, "ic90": [0.52, 0.56], "n": 3000}, "leida": {"exito": 0.49, "ic90": [0.47, 0.51], "n": 2500}},
+        {"estrato": "2.5 s o más", "ciega": {"exito": 0.47, "ic90": [0.45, 0.49], "n": 2800}, "leida": {"exito": 0.38, "ic90": [0.36, 0.40], "n": 4000}},
+        {"estrato": "total", "ciega": {"exito": 0.506, "ic90": [0.49, 0.52], "n": 5800}, "leida": {"exito": 0.422, "ic90": [0.41, 0.435], "n": 6500}},
     ],
     "revelacion": {
         "mediana_s": 2.1,

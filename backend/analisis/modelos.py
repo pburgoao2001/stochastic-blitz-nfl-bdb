@@ -42,6 +42,7 @@ class Logit:
     coef_estandarizados: np.ndarray
     l2: float
     iteraciones: int
+    convergio: bool = True
 
     def predecir(self, X) -> np.ndarray:
         """P(y = 1 | X)."""
@@ -71,6 +72,7 @@ def logit_irls(X, y, l2: float, max_iter: int = 100, tol: float = 1e-8) -> Logit
     b = np.zeros(Z.shape[1])
     f = objetivo(b)
     it = 0
+    convergio = False
     for it in range(1, max_iter + 1):
         p = _sigmoide(Z @ b)
         g = Z.T @ (y - p) - pen * b
@@ -84,9 +86,11 @@ def logit_irls(X, y, l2: float, max_iter: int = 100, tol: float = 1e-8) -> Logit
         b = b + paso
         f = nuevo
         if np.max(np.abs(paso)) < tol:
+            convergio = True
             break
+    convergio = convergio and bool(np.all(np.isfinite(b)))
     coef = b[1:] / escala
-    return Logit(float(b[0] - np.sum(coef * media)), coef, b[1:].copy(), float(l2), it)
+    return Logit(float(b[0] - np.sum(coef * media)), coef, b[1:].copy(), float(l2), it, convergio)
 
 
 def perdida_log(y, p, eps: float = 1e-12) -> float:

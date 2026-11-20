@@ -26,20 +26,20 @@ Five sequential tasks follow the implementation order from the spec description.
   - [x] 1.2 Update `backend/main.py`: add startup import logic (try `metricas`, fall back to mocks, log to stderr on failure); add `GET /api/resumen`, `GET /api/equipos`, `GET /api/rival`, `GET /api/replays`, `POST /api/informe` (template only for now); retain `GET /health` unchanged; attach `X-Data-Source: mock` header where applicable.
   - [x] 1.3 Verify manually: start Uvicorn (`.venv/Scripts/uvicorn backend.main:app --reload`), hit each endpoint with curl or a browser, confirm shapes and header.
 
-- [-] 2. Build the single-page dashboard consuming the API
+- [x] 2. Build the single-page dashboard consuming the API
 
   Replace the placeholder `App.tsx` with a full single-page layout that renders all six sections. Add the Vite proxy. Each section reads from the API responses and renders with Recharts where specified.
 
-  - [ ] 2.1 Update `vite.config.ts`: add `server.proxy` mapping `/api` to `http://localhost:8000`; keep `base: './'`.
-  - [ ] 2.2 Create `dashboard/src/components/Banner.tsx`: shows a yellow banner "⚠ datos de prueba" when the `X-Data-Source: mock` header is detected.
-  - [ ] 2.3 Create `dashboard/src/components/Titular.tsx`: displays `resumen.titular`, `efecto.valor_pp` (formatted as `+X pp`), and a horizontal `BarChart` with error bars for each `contraste` stratum comparing `ciega.exito` and `leida.exito`.
-  - [ ] 2.4 Create `dashboard/src/components/LaCarrera.tsx`: renders a `LineChart` with two series — `revelacion.curva` (disguise rate + IC band as area) and `revelacion.lanzamiento` (cumulative launch probability) — on the same X axis (time in seconds).
-  - [ ] 2.5 Create `dashboard/src/components/SankeyChart.tsx`: renders Recharts' `Sankey` component with `sankey.nodes` and `sankey.links`.
-  - [ ] 2.6 Create `dashboard/src/components/Ranking.tsx`: renders a horizontal `BarChart` from `GET api/equipos`, one bar per team, with error bars for `id.ic90`.
-  - [ ] 2.7 Create `dashboard/src/components/TarjetaRival.tsx`: contains a `<select>` for team (from equipos list), a `<select>` for down (1–4), a `<select>` for distancia (`1-3`, `4-6`, `7+`), and a "Generar informe" button. On selection change, calls `fetch('api/rival?equipo=...&down=...&distancia=...')` and shows formations/frases. On button click, calls `fetch('api/informe', {method:'POST', body: JSON.stringify({equipo})})` and displays the returned text with the matching label.
-  - [ ] 2.8 Create `dashboard/src/components/Repeticion.tsx`: shows a static placeholder "Repetición disponible próximamente" (section 4 is wired in task 4).
-  - [ ] 2.9 Rewrite `dashboard/src/App.tsx`: fetch `api/resumen` and `api/equipos` on mount, detect mock header, assemble all sections in order: Banner → Titular → LaCarrera → SankeyChart → Repeticion → Ranking → TarjetaRival.
-  - [ ] 2.10 Run `npm run build` inside `dashboard/` and confirm zero TypeScript errors and a successful Vite build.
+  - [x] 2.1 Update `vite.config.ts`: add `server.proxy` mapping `/api` to `http://localhost:8000`; keep `base: './'`.
+  - [x] 2.2 Create `dashboard/src/components/Banner.tsx`: shows a yellow banner "⚠ datos de prueba" when the `X-Data-Source: mock` header is detected.
+  - [x] 2.3 Create `dashboard/src/components/Titular.tsx`: displays `resumen.titular`, `efecto.valor_pp` (formatted as `+X pp`), and a horizontal `BarChart` with error bars for each `contraste` stratum comparing `ciega.exito` and `leida.exito`.
+  - [x] 2.4 Create `dashboard/src/components/LaCarrera.tsx`: renders a `LineChart` with two series — `revelacion.curva` (disguise rate + IC band as area) and `revelacion.lanzamiento` (cumulative launch probability) — on the same X axis (time in seconds).
+  - [x] 2.5 Create `dashboard/src/components/SankeyChart.tsx`: renders Recharts' `Sankey` component with `sankey.nodes` and `sankey.links`.
+  - [x] 2.6 Create `dashboard/src/components/Ranking.tsx`: renders a horizontal `BarChart` from `GET api/equipos`, one bar per team, with error bars for `id.ic90`.
+  - [x] 2.7 Create `dashboard/src/components/TarjetaRival.tsx`: contains a `<select>` for team (from equipos list), a `<select>` for down (1–4), a `<select>` for distancia (`1-3`, `4-6`, `7+`), and a "Generar informe" button. On selection change, calls `fetch('api/rival?equipo=...&down=...&distancia=...')` and shows formations/frases. On button click, calls `fetch('api/informe', {method:'POST', body: JSON.stringify({equipo})})` and displays the returned text with the matching label.
+  - [x] 2.8 Create `dashboard/src/components/Repeticion.tsx`: shows a static placeholder "Repetición disponible próximamente" (section 4 is wired in task 4).
+  - [x] 2.9 Rewrite `dashboard/src/App.tsx`: fetch `api/resumen` and `api/equipos` on mount, detect mock header, assemble all sections in order: Banner → Titular → LaCarrera → SankeyChart → Repeticion → Ranking → TarjetaRival.
+  - [x] 2.10 Run `npm run build` inside `dashboard/` and confirm zero TypeScript errors and a successful Vite build.
 
 - [ ] 3. Connect to real analytics module when available
 

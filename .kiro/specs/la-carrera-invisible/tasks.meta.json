@@ -18,6 +18,81 @@
         "executionId": "2839a2d2-d3c7-4b7f-a744-0db4f0050d46",
         "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
         "timestamp": 1795193153963
+      },
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193603585
+      }
+    ],
+    "2.1 Update `vite.config.ts`: add `server.proxy` mapping `/api` to `http://localhost:8000`; keep `base: './'`.": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193588231
+      }
+    ],
+    "2.2 Create `dashboard/src/components/Banner.tsx`: shows a yellow banner \"⚠ datos de prueba\" when the `X-Data-Source: mock` header is detected.": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193589012
+      }
+    ],
+    "2.3 Create `dashboard/src/components/Titular.tsx`: displays `resumen.titular`, `efecto.valor_pp` (formatted as `+X pp`), and a horizontal `BarChart` with error bars for each `contraste` stratum comparing `ciega.exito` and `leida.exito`.": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193590073
+      }
+    ],
+    "2.4 Create `dashboard/src/components/LaCarrera.tsx`: renders a `LineChart` with two series — `revelacion.curva` (disguise rate + IC band as area) and `revelacion.lanzamiento` (cumulative launch probability) — on the same X axis (time in seconds).": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193591118
+      }
+    ],
+    "2.5 Create `dashboard/src/components/SankeyChart.tsx`: renders Recharts' `Sankey` component with `sankey.nodes` and `sankey.links`.": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193592228
+      }
+    ],
+    "2.6 Create `dashboard/src/components/Ranking.tsx`: renders a horizontal `BarChart` from `GET api/equipos`, one bar per team, with error bars for `id.ic90`.": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193592993
+      }
+    ],
+    "2.7 Create `dashboard/src/components/TarjetaRival.tsx`: contains a `<select>` for team (from equipos list), a `<select>` for down (1–4), a `<select>` for distancia (`1-3`, `4-6`, `7+`), and a \"Generar informe\" button. On selection change, calls `fetch('api/rival?equipo=...&down=...&distancia=...')` and shows formations/frases. On button click, calls `fetch('api/informe', {method:'POST', body: JSON.stringify({equipo})})` and displays the returned text with the matching label.": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193594625
+      }
+    ],
+    "2.8 Create `dashboard/src/components/Repeticion.tsx`: shows a static placeholder \"Repetición disponible próximamente\" (section 4 is wired in task 4).": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193595429
+      }
+    ],
+    "2.9 Rewrite `dashboard/src/App.tsx`: fetch `api/resumen` and `api/equipos` on mount, detect mock header, assemble all sections in order: Banner → Titular → LaCarrera → SankeyChart → Repeticion → Ranking → TarjetaRival.": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193596386
+      }
+    ],
+    "2.10 Run `npm run build` inside `dashboard/` and confirm zero TypeScript errors and a successful Vite build.": [
+      {
+        "executionId": "ec17d986-b210-4fb2-852b-1983ff12008b",
+        "chatSessionId": "sess_e4fc09e5-f197-4927-909e-d12ec98eea2c",
+        "timestamp": 1795193603225
       }
     ]
   }

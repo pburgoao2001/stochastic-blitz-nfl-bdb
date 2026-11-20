@@ -1,0 +1,31 @@
+{
+  "universo": {
+    "jugadas_analisis": 7541,
+    "excluidas": {
+      "dist_endzone < 20": 966,
+      "cobertura sin etiqueta": 195
+    },
+    "cobertura_sin_etiqueta_por_tipo": {
+      "Cover-0": 138,
+      "Prevent": 29,
+      "Bracket": 25,
+      "Miscellaneous": 3
+    },
+    "incluidas": 6380
+  },
+  "muestra_en_snap": {
+    "cerrado": 3715,
+    "indeterminado": 1774,
+    "abierto": 891
+  },
+  "decididas": 4606,
+  "con_disfraz": 1279,
+  "sin_disfraz": 3327,
+  "disfraz_revelado_antes_del_pase": 643,
+  "ciegas": 636,
+  "exito": {
+    "con_valor": 5849,
+    "excluidas_por_castigo": 531
+  },
+  "validacion_jugadas": 607
+}
